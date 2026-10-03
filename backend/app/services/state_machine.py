@@ -14,7 +14,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.errors import Conflict, Forbidden, Invalid
 from app.models import Employee, Order, OrderEvent
 from app.models.base import utcnow
-from app.models.enums import STATUS_LABELS, TERMINAL_STATUSES, OrderStatus, Role
+from app.models.enums import (
+    PRE_DONE_STATUSES,
+    STATUS_LABELS,
+    TERMINAL_STATUSES,
+    OrderStatus,
+    Role,
+)
 from app.services.notifications.live import STAFF_ROLES, LiveEvent, queue_event
 
 S = OrderStatus
@@ -175,9 +181,16 @@ def actor_kind(order: Order, actor: Employee | None) -> ActorKind:
     if actor.role in (Role.MASTER, Role.ADMIN):
         return ActorKind.MASTER
     if actor.role == Role.WORKER:
-        if order.assignee_id != actor.id:
-            raise Forbidden(f"Наряд №{order.number} назначен другому исполнителю.")
-        return ActorKind.ASSIGNEE
+        if order.assignee_id == actor.id:
+            return ActorKind.ASSIGNEE
+        # Наряд на бригаду: любой её член может взять его себе
+        if (
+            order.assignee_id is None
+            and order.brigade_id is not None
+            and order.brigade_id == actor.brigade_id
+        ):
+            return ActorKind.ASSIGNEE
+        raise Forbidden(f"Наряд №{order.number} назначен другому исполнителю.")
     raise Forbidden("Руководитель просматривает наряды, но не меняет их статус.")
 
 
@@ -220,19 +233,100 @@ async def apply_transition(
     transition = check_transition(order.status, action, kind, reason=reason, number=order.number)
     if action == Action.COMPLETE:
         _check_completion(order)
+    if kind == ActorKind.ASSIGNEE and order.assignee_id is None and actor is not None:
+        order.assignee_id = actor.id  # член бригады взял бригадный наряд
+    return _move(
+        session,
+        order,
+        transition.target,
+        action=action.value,
+        actor=actor,
+        reason=reason,
+        comment=comment,
+        data=data,
+        now=now,
+    )
 
+
+async def reassign(
+    session: AsyncSession,
+    order: Order,
+    new_assignee: Employee,
+    *,
+    actor: Employee,
+    comment: str | None = None,
+    now: datetime | None = None,
+) -> OrderEvent:
+    """Переназначить исполнителя до «Исполнено».
+
+    Новый исполнитель должен сам принять наряд, поэтому статус возвращается в «Выдан».
+    Из «Отклонён» это обычный переход REISSUE; из остальных статусов до «Исполнено» —
+    служебное событие «reassign» с тем же результатом.
+    """
+    if actor_kind(order, actor) != ActorKind.MASTER:
+        raise Forbidden("Переназначает мастер.")
+    if new_assignee.id == order.assignee_id and order.status != S.REJECTED:
+        raise Invalid(f"Наряд №{order.number} уже назначен этому исполнителю.")
+
+    previous_assignee = order.assignee_id
+    data = {"from_assignee_id": previous_assignee, "to_assignee_id": new_assignee.id}
+
+    if order.status == S.REJECTED:
+        check_transition(order.status, Action.REISSUE, ActorKind.MASTER, number=order.number)
+        action = Action.REISSUE.value
+    elif order.status in PRE_DONE_STATUSES:
+        action = "reassign"
+    else:
+        raise Conflict(
+            f"Переназначить можно только до «Исполнено». Наряд №{order.number} "
+            f"в статусе «{STATUS_LABELS[order.status]}»."
+        )
+
+    order.assignee_id = new_assignee.id
+    order.escalated_at = None
+    order.reminder_sent_at = None
+    return _move(
+        session,
+        order,
+        S.ISSUED,
+        action=action,
+        actor=actor,
+        comment=comment,
+        data=data,
+        now=now,
+        extra_user_ids=(previous_assignee,),
+    )
+
+
+def _move(
+    session: AsyncSession,
+    order: Order,
+    target: OrderStatus,
+    *,
+    action: str,
+    actor: Employee | None,
+    reason: str | None = None,
+    comment: str | None = None,
+    data: dict[str, Any] | None = None,
+    now: datetime | None = None,
+    extra_user_ids: tuple[int | None, ...] = (),
+) -> OrderEvent:
+    """Записать смену статуса: поле времени, журнал, живое событие.
+
+    Проверок здесь нет — их делают apply_transition и reassign.
+    """
     now = now or utcnow()
     previous = order.status
-    order.status = transition.target
-    setattr(order, STATUS_TIMESTAMP_FIELD[transition.target], now)
+    order.status = target
+    setattr(order, STATUS_TIMESTAMP_FIELD[target], now)
     order.updated_at = now
 
     event = OrderEvent(
         order_id=order.id,
         actor_id=actor.id if actor else None,
-        action=action.value,
+        action=action,
         from_status=previous,
-        to_status=transition.target,
+        to_status=target,
         reason=reason.strip() if reason else None,
         comment=comment.strip() if comment else None,
         data=data,
@@ -240,7 +334,7 @@ async def apply_transition(
     )
     session.add(event)
 
-    roles, users = order_audience(order)
+    roles, users = order_audience(order, *extra_user_ids)
     queue_event(
         session,
         LiveEvent(
@@ -249,8 +343,8 @@ async def apply_transition(
                 "order_id": order.id,
                 "number": order.number,
                 "from": previous.value,
-                "to": transition.target.value,
-                "action": action.value,
+                "to": target.value,
+                "action": action,
                 "assignee_id": order.assignee_id,
                 "actor_id": actor.id if actor else None,
                 "at": now.isoformat(),

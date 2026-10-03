@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -26,6 +27,23 @@ class Settings(BaseSettings):
 
     demo_mode: bool = False
 
+    # Время и смены. С марта 2024 Казахстан живёт в едином поясе UTC+5.
+    timezone: str = "Asia/Qostanay"
+    day_shift_start_hour: int = 8
+    night_shift_start_hour: int = 20
+
+    # Фото
+    max_photos_per_kind: int = 5
+    max_upload_mb: int = 15
+    photo_max_side: int = 1600
+    thumb_max_side: int = 480
+
+    # Срок по умолчанию, если мастер не указал (часы) — по приоритету
+    deadline_hours_emergency: float = 2
+    deadline_hours_high: float = 4
+    deadline_hours_normal: float = 8
+    deadline_hours_planned: float = 24
+
     anthropic_api_key: str | None = None
     llm_model: str = "claude-sonnet-5-5"
     llm_fast_model: str = "claude-haiku-4-5-20251001"
@@ -39,6 +57,10 @@ class Settings(BaseSettings):
     @property
     def is_sqlite(self) -> bool:
         return self.database_url.startswith("sqlite")
+
+    @property
+    def tz(self) -> ZoneInfo:
+        return ZoneInfo(self.timezone)
 
 
 @lru_cache

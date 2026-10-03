@@ -57,6 +57,8 @@ class Order(Base):
     cancelled_at: Mapped[datetime | None]
     updated_at: Mapped[datetime] = mapped_column(default=utcnow, onupdate=utcnow)
 
+    # Оборудование остановлено из-за неисправности: простой считается от выдачи до «Исполнено»
+    equipment_stopped: Mapped[bool] = mapped_column(default=False)
     downtime_minutes: Mapped[int | None]
 
     # Отметки контроля сроков — чтобы планировщик не слал одно и то же дважды

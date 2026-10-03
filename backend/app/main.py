@@ -7,6 +7,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from app import ws
 from app.api import api_router
@@ -26,6 +27,14 @@ FIELD_NAMES = {
     "assignee_id": "исполнитель",
     "priority": "приоритет",
     "deadline_at": "срок",
+    "works_done": "выполненные работы",
+    "fault_code_id": "шифр неисправности",
+    "quantity": "количество",
+    "material_id": "материал",
+    "score": "оценка",
+    "comment": "комментарий",
+    "files": "фото",
+    "kind": "тип фото",
 }
 
 ERROR_TEXT = {
@@ -52,6 +61,9 @@ def _humanize_validation(errors: list[Any]) -> list[dict[str, str]]:
         name = FIELD_NAMES.get(field, field)
         if field == "pin" and err.get("type") == "string_pattern_mismatch":
             message = "ПИН — ровно 4 цифры"
+        elif err.get("type") == "value_error":
+            # Сообщение из нашего валидатора уже написано для человека
+            message = str(err.get("msg", "")).removeprefix("Value error, ")
         else:
             message = f"{name}: {ERROR_TEXT.get(err.get('type', ''), 'неверное значение')}"
         result.append({"field": ".".join(loc), "message": message})
@@ -95,11 +107,14 @@ def create_app() -> FastAPI:
         _request: Request, exc: RequestValidationError
     ) -> JSONResponse:
         errors = _humanize_validation(list(exc.errors()))
-        detail = "Проверьте поля: " + "; ".join(e["message"] for e in errors) + "."
+        detail = "Проверьте поля: " + "; ".join(e["message"].rstrip(".") for e in errors) + "."
         return JSONResponse({"detail": detail, "errors": errors}, status_code=422)
 
     app.include_router(api_router)
     app.include_router(ws.router)
+    # В docker-compose /media отдаёт Caddy напрямую; это — для локального запуска
+    settings.media_dir.mkdir(parents=True, exist_ok=True)
+    app.mount("/media", StaticFiles(directory=settings.media_dir), name="media")
     return app
 
 

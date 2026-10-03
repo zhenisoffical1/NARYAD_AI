@@ -6,7 +6,7 @@ requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.30",
-    "sqlalchemy[asyncio]>=2.0.30",
+    "sqlalchemy[asyncio]>=2.1",
     "asyncpg>=0.29",
     "aiosqlite>=0.20",
     "alembic>=1.13",
@@ -15,6 +15,10 @@ dependencies = [
     "pyjwt>=2.8",
     "python-multipart>=0.0.9",
     "apscheduler>=3.10,<4",
+    "tzdata>=2024.1",
+    "pillow>=10.4",
+    "imagehash>=4.3",
+    "piexif>=1.1",
 ]
 
 [project.optional-dependencies]

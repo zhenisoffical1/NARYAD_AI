@@ -69,8 +69,8 @@ def make_employee(session: AsyncSession) -> EmployeeFactory:
             full_name=kwargs.pop("full_name", f"Тестов Тест {counter['n']}"),
             role=role,
             pin_hash=hash_pin(pin),
-            shift=Shift.DAY,
-            on_shift=True,
+            shift=kwargs.pop("shift", Shift.DAY),
+            on_shift=kwargs.pop("on_shift", True),
             **kwargs,
         )
         session.add(user)
