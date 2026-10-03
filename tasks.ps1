@@ -63,7 +63,7 @@ switch ($Task) {
     'lint' {
         Invoke-Backend @('-m', 'ruff', 'check', '.')
         Invoke-Backend @('-m', 'ruff', 'format', '--check', '.')
-        Invoke-Backend @('-m', 'mypy', 'app')
+        Invoke-Backend @('-m', 'mypy', 'app', 'seed')
         Invoke-Frontend @('run', 'lint')
     }
     'fmt' {

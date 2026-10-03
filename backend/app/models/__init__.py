@@ -11,9 +11,11 @@ from app.models.reference import (
     TimeNorm,
     TimeNormMaterial,
 )
+from app.models.system import AppState
 
 __all__ = [
     "AiAssessment",
+    "AppState",
     "Base",
     "Brigade",
     "Employee",

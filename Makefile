@@ -5,7 +5,7 @@ BACKEND = $(COMPOSE) exec backend
 # Одноразовый контейнер бэкенда: тесты и линтер не требуют ничего, кроме Docker
 BACKEND_RUN = $(COMPOSE) run --rm --no-deps backend
 
-.PHONY: up down logs ps migrate seed test test-backend test-frontend lint fmt ai-eval e2e
+.PHONY: up down logs ps migrate seed seed-check scene test test-backend test-frontend lint fmt ai-eval e2e
 
 up:  ## Поднять всю систему
 	$(COMPOSE) up -d --build
@@ -25,6 +25,12 @@ migrate:
 seed:  ## Наполнить базу тестовыми данными (детерминированно, seed=42)
 	$(BACKEND) python -m seed
 
+seed-check:  ## Статистика данных и проверка заложенных закономерностей
+	$(BACKEND) python -m seed.check
+
+scene:  ## Пересоздать только демо-сцену
+	$(BACKEND) python -m seed --scene-only
+
 test: test-backend test-frontend
 
 test-backend:
@@ -34,7 +40,7 @@ test-frontend:
 	cd frontend && npm ci && npm run typecheck
 
 lint:
-	$(BACKEND_RUN) sh -c "ruff check . && ruff format --check . && mypy app"
+	$(BACKEND_RUN) sh -c "ruff check . && ruff format --check . && mypy app seed"
 	cd frontend && npm run lint
 
 fmt:
