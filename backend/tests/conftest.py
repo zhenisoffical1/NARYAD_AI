@@ -6,6 +6,7 @@ os.environ["DATABASE_URL"] = os.environ.get("TEST_DATABASE_URL", "sqlite+aiosqli
 os.environ.setdefault("JWT_SECRET", "test-secret-of-sufficient-length-32b")
 os.environ["ANTHROPIC_API_KEY"] = ""
 os.environ["TELEGRAM_BOT_TOKEN"] = ""
+os.environ["DEMO_MODE"] = "false"  # локальный .env не должен влиять на тесты
 
 from collections.abc import AsyncIterator, Callable, Coroutine
 from datetime import timedelta
