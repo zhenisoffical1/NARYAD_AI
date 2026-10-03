@@ -16,6 +16,7 @@ export const ru = {
     pinHint: '4 цифры',
     submit: 'Войти',
     checking: 'Проверяем…',
+    enterLoginFirst: 'Сначала введите логин — фамилию латиницей',
   },
   common: {
     logout: 'Выйти',

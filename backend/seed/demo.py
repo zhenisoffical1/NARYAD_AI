@@ -143,6 +143,8 @@ async def clear_scene(session: AsyncSession, history_end: datetime) -> None:
     if ids:
         await session.execute(delete(Order).where(Order.id.in_(ids)))
     await session.execute(delete(Notification).where(Notification.created_at >= history_end))
+    # Удалённые строки не должны остаться в памяти сессии: новые записи могут получить те же id
+    session.expunge_all()
     for order_id in ids:
         shutil.rmtree(settings.media_dir / "orders" / str(order_id), ignore_errors=True)
 

@@ -25,7 +25,9 @@ export function PinPad({
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (disabled) return
+      // Цифры, набранные в поле ввода (например, в логине «master1»), — не ПИН
+      const target = e.target as HTMLElement | null
+      if (disabled || target?.closest('input, textarea, [contenteditable]')) return
       if (/^\d$/.test(e.key) && value.length < length) onChange(value + e.key)
       if (e.key === 'Backspace') onChange(value.slice(0, -1))
     }

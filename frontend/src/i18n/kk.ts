@@ -18,6 +18,7 @@ export const kk: Translation = {
     pinHint: '4 сан',
     submit: 'Кіру',
     checking: 'Тексеріп жатырмыз…',
+    enterLoginFirst: 'Алдымен логинді енгізіңіз — тегіңізді латынша',
   },
   common: {
     logout: 'Шығу',

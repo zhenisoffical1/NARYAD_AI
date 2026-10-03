@@ -44,7 +44,7 @@ testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "-q"
 filterwarnings = [
-    "ignore:Using `httpx` with `starlette.testclient` is deprecated:DeprecationWarning",
+    "ignore:Using `httpx` with `starlette.testclient` is deprecated",
 ]
 
 [tool.ruff]

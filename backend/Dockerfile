@@ -7,10 +7,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
+# Сначала только зависимости — слой кэшируется, пока не меняется pyproject.toml.
+# Сам проект не устанавливается: код запускается из /app.
 COPY pyproject.toml ./
 RUN mkdir -p app seed && touch app/__init__.py seed/__init__.py \
     && pip install ".[dev]" \
-    && rm -rf app seed
+    && pip uninstall -y naryadai-backend \
+    && rm -rf app seed build *.egg-info
 
 COPY . .
 
