@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+build/
+dist/
+
+# Node
+node_modules/
+frontend/dist/
+frontend/dev-dist/
+frontend/test-results/
+frontend/playwright-report/
+
+# Локальные данные
+.env
+*.db
+*.db-journal
+media/
+backend/media/
+
+# IDE / ОС
+.idea/
+.vscode/
+*.swp
+Thumbs.db
+.DS_Store
