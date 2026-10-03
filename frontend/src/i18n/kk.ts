@@ -19,6 +19,8 @@ export const kk: Translation = {
     submit: 'Кіру',
     checking: 'Тексеріп жатырмыз…',
     enterLoginFirst: 'Алдымен логинді енгізіңіз — тегіңізді латынша',
+    subtitle: 'Есептік жазбаны әкімші береді',
+    company: '«Қостанай Минералдары» АҚ',
   },
   common: {
     logout: 'Шығу',

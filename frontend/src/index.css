@@ -5,14 +5,16 @@
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
 :root {
-  --bg: #f2f5f8;
-  --surface: #ffffff;
-  --plate: #e6ebf0;
-  --line: #d0d8e0;
-  --ink: #1b2733;
-  --ink-2: #3f4c59;
-  --ink-3: #5a6673;
-  --hero: #e7effa;
+  /* Приглушённая корпоративная палитра (ориентир — SAP Fiori Horizon, Siemens iX):
+     фон не белый, текст тёмно-синий, белее всего только карточки */
+  --bg: #e4e9ee;
+  --surface: #f6f8fa;
+  --plate: #dce2e8;
+  --line: #c6cfd8;
+  --ink: #1d2d3e;
+  --ink-2: #3d4d5e;
+  --ink-3: #56677a;
+  --hero: #10294a;
   --accent: #0b3f8c;
   --accent-press: #082f69;
   --on-accent: #ffffff;
@@ -33,10 +35,10 @@
   --red-strong: #c8231c;
   --green-strong: #257434;
   --queue-strong: #3567b3;
-  /* Шапка: днём — фирменный синий, ночью — сталь */
-  --bar: #0b3f8c;
-  --on-bar: #ffffff;
-  --bar-line: #2f62ad;
+  /* Шапка: глубокий фирменный синий */
+  --bar: #12305a;
+  --on-bar: #f1f5f9;
+  --bar-line: #0b3f8c;
   color-scheme: light;
 }
 
@@ -68,7 +70,7 @@
   --green-strong: #257434;
   --queue-strong: #3567b3;
   --bar: #0b1014;
-  --hero: #0e1a2a;
+  --hero: #0d1e33;
   --on-bar: #d7ddd9;
   --bar-line: #26323c;
   color-scheme: dark;
