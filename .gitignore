@@ -16,6 +16,9 @@ frontend/dev-dist/
 frontend/test-results/
 frontend/playwright-report/
 
+# Полностраничные мобильные скриншоты каталога — по 2 МБ, пересоздаются `npm run screens`
+docs/screenshots/dev-ui-mobile-*.png
+
 # Локальные данные
 .env
 *.db

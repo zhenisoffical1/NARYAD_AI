@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router'
 
 import { LoginPage } from '@/features/auth/LoginPage'
+import { DevUiPage } from '@/features/dev/DevUiPage'
 
 import { RequireRole } from './RequireRole'
 import { HomeRedirect, Screen } from './RouteScreens'
@@ -9,7 +10,7 @@ import { NotFoundScreen } from './SystemScreens'
 export const router = createBrowserRouter([
   { path: '/', element: <HomeRedirect /> },
   { path: '/login', element: <LoginPage /> },
-  { path: '/dev/ui', element: <Screen name="devUi" /> },
+  { path: '/dev/ui', element: <DevUiPage /> },
   { path: '/demo', element: <Screen name="demo" /> },
   {
     element: <RequireRole roles={['worker']} />,

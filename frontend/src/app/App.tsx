@@ -2,6 +2,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from 'react-router'
 
 import { ApiError } from '@/shared/api/client'
+import { useThemeSync } from '@/shared/lib/theme'
+import { Toaster } from '@/shared/ui'
 
 import { router } from './router'
 
@@ -17,9 +19,11 @@ const queryClient = new QueryClient({
 })
 
 export function App() {
+  useThemeSync()
   return (
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
+      <Toaster />
     </QueryClientProvider>
   )
 }
