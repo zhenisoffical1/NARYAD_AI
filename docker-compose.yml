@@ -1,0 +1,82 @@
+# Запуск всей системы: docker compose up -d --build, затем make seed.
+# Локально — http://localhost; на сервере задайте SITE_ADDRESS=домен в .env, Caddy выпустит HTTPS сам.
+
+name: naryadai
+
+x-backend: &backend
+  build: ./backend
+  env_file:
+    - path: .env
+      required: false
+  environment:
+    DATABASE_URL: postgresql+asyncpg://naryad:naryad@db:5432/naryad
+    MEDIA_DIR: /data/media
+  volumes:
+    - media:/data/media
+  restart: unless-stopped
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: naryad
+      POSTGRES_PASSWORD: naryad
+      POSTGRES_DB: naryad
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U naryad -d naryad"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  backend:
+    <<: *backend
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*'"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  scheduler:
+    <<: *backend
+    command: python -m app.workers.scheduler
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  bot:
+    <<: *backend
+    command: python -m app.bot
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infra/Caddyfile:/etc/caddy/Caddyfile:ro
+      - media:/srv/media:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  media:
+  caddy_data:
+  caddy_config:
