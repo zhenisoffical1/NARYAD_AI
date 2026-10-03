@@ -26,7 +26,7 @@ export function TopBar({
 }) {
   const { t } = useTranslation()
   return (
-    <header className="sticky top-0 z-30 flex min-h-14 items-center gap-1 bg-steel pt-[env(safe-area-inset-top)] pr-2 pl-1 text-on-steel">
+    <header className="sticky top-0 z-30 flex min-h-14 items-center gap-1 border-b-4 border-bar-line bg-bar pt-[env(safe-area-inset-top)] pr-2 pl-1 text-on-bar">
       {onBack ? (
         <button
           type="button"
@@ -41,7 +41,7 @@ export function TopBar({
       )}
       <div className="min-w-0 flex-1 py-2">
         <h1 className="truncate text-h2 font-semibold">{title}</h1>
-        {subtitle && <p className="truncate text-small text-on-steel/70">{subtitle}</p>}
+        {subtitle && <p className="truncate text-small opacity-80">{subtitle}</p>}
       </div>
       <LiveDot />
       {right}

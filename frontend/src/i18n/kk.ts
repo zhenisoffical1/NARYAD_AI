@@ -19,6 +19,9 @@ export const kk: Translation = {
     submit: 'Кіру',
     checking: 'Тексеріп жатырмыз…',
     enterLoginFirst: 'Алдымен логинді енгізіңіз — тегіңізді латынша',
+    loginFeature1: 'Нарядты телефоннан 6 басумен беру',
+    loginFeature2: 'Мерзім мен сапа ЖИ бақылауында',
+    loginFeature3: 'Telegram мен қосымшадағы хабарламалар',
   },
   common: {
     logout: 'Шығу',

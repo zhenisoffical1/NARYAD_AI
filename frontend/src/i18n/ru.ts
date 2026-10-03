@@ -17,6 +17,9 @@ export const ru = {
     submit: 'Войти',
     checking: 'Проверяем…',
     enterLoginFirst: 'Сначала введите логин — фамилию латиницей',
+    loginFeature1: 'Наряд с телефона за 6 нажатий',
+    loginFeature2: 'Сроки и качество под контролем ИИ',
+    loginFeature3: 'Уведомления в Telegram и в приложении',
   },
   common: {
     logout: 'Выйти',

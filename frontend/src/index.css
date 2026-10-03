@@ -32,6 +32,10 @@
   --red-strong: #c8231c;
   --green-strong: #257434;
   --queue-strong: #3567b3;
+  /* Шапка: днём — фирменный синий, ночью — сталь */
+  --bar: #0b3f8c;
+  --on-bar: #ffffff;
+  --bar-line: #2f62ad;
   color-scheme: light;
 }
 
@@ -62,6 +66,9 @@
   --red-strong: #c8231c;
   --green-strong: #257434;
   --queue-strong: #3567b3;
+  --bar: #0b1014;
+  --on-bar: #d7ddd9;
+  --bar-line: #26323c;
   color-scheme: dark;
 }
 
@@ -90,6 +97,9 @@
   --color-red-strong: var(--red-strong);
   --color-green-strong: var(--green-strong);
   --color-queue-strong: var(--queue-strong);
+  --color-bar: var(--bar);
+  --color-on-bar: var(--on-bar);
+  --color-bar-line: var(--bar-line);
 }
 
 @theme {
@@ -182,6 +192,13 @@
     var(--plate) 0 5px,
     transparent 5px 10px
   );
+}
+
+/* Контуры карьера — как изолинии на маркшейдерском плане. Фон для шапки входа. */
+@utility contours {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 480 320' preserveAspectRatio='xMidYMid slice'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.13' stroke-width='1.5'%3E%3Cpath d='M-20 260 C60 200 120 250 200 210 S330 120 420 160 S520 130 520 130'/%3E%3Cpath d='M-20 230 C70 170 130 220 210 180 S330 95 420 130 S520 100 520 100'/%3E%3Cpath d='M-20 200 C80 140 140 190 220 150 S335 70 420 100 S520 70 520 70'/%3E%3Cpath d='M-20 170 C90 110 150 160 230 120 S340 45 420 70 S520 40 520 40'/%3E%3Cpath d='M-20 140 C100 80 160 130 240 90 S345 20 420 40 S520 10 520 10'/%3E%3Cpath d='M-20 290 C50 230 110 280 190 240 S325 150 420 190 S520 160 520 160'/%3E%3Cellipse cx='300' cy='70' rx='46' ry='18'/%3E%3Cellipse cx='300' cy='70' rx='24' ry='8'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 @utility tabular {
