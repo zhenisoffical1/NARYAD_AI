@@ -1,0 +1,29 @@
+@import 'tailwindcss';
+
+/* Базовая палитра из CLAUDE.md, раздел 8. Полная система токенов — docs/DESIGN.md (этап 2b). */
+@theme {
+  --color-steel: #1f2a33;
+  --color-mineral: #e8eae7;
+  --color-km-blue: #0b3f8c;
+  --color-signal-yellow: #f2c200;
+  --color-signal-red: #d7261e;
+  --color-ok-green: #2e8b3e;
+  --color-queue-blue: #3d74c4;
+  --color-off-gray: #8a9299;
+
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-condensed: 'IBM Plex Sans Condensed', 'Arial Narrow', system-ui, sans-serif;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  background: var(--color-mineral);
+  color: var(--color-steel);
+  font-family: var(--font-sans);
+  font-size: 17px;
+}
