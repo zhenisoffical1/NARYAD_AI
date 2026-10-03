@@ -1,17 +1,18 @@
 @import 'tailwindcss';
-@import '@fontsource-variable/ibm-plex-sans/wdth.css';
+@import '@fontsource-variable/roboto/wdth.css';
 
 /* Токены — docs/DESIGN.md. Тема переключается атрибутом data-theme на <html>. */
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 
 :root {
-  --bg: #e8eae7;
-  --surface: #f7f8f6;
-  --plate: #d9ddda;
-  --line: #bcc3bf;
-  --ink: #1f2a33;
-  --ink-2: #3b4752;
-  --ink-3: #56626d;
+  --bg: #f2f5f8;
+  --surface: #ffffff;
+  --plate: #e6ebf0;
+  --line: #d0d8e0;
+  --ink: #1b2733;
+  --ink-2: #3f4c59;
+  --ink-3: #5a6673;
+  --hero: #e7effa;
   --accent: #0b3f8c;
   --accent-press: #082f69;
   --on-accent: #ffffff;
@@ -67,6 +68,7 @@
   --green-strong: #257434;
   --queue-strong: #3567b3;
   --bar: #0b1014;
+  --hero: #0e1a2a;
   --on-bar: #d7ddd9;
   --bar-line: #26323c;
   color-scheme: dark;
@@ -98,12 +100,13 @@
   --color-green-strong: var(--green-strong);
   --color-queue-strong: var(--queue-strong);
   --color-bar: var(--bar);
+  --color-hero: var(--hero);
   --color-on-bar: var(--on-bar);
   --color-bar-line: var(--bar-line);
 }
 
 @theme {
-  --font-sans: 'IBM Plex Sans Variable', 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Roboto Variable', Roboto, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 
   --text-display: 44px;
   --text-display--line-height: 44px;
@@ -163,13 +166,13 @@
 
 /* Узкое начертание для номеров, инвентарных номеров, табло */
 @utility cond {
-  font-stretch: 75%;
+  font-stretch: 85%;
   font-variant-numeric: tabular-nums;
 }
 
 /* Штамп на табличке: узкий капс с разрядкой */
 @utility stamp {
-  font-stretch: 75%;
+  font-stretch: 85%;
   font-size: var(--text-stamp);
   line-height: var(--text-stamp--line-height);
   font-weight: 600;
@@ -197,6 +200,12 @@
 /* Контуры карьера — как изолинии на маркшейдерском плане. Фон для шапки входа. */
 @utility contours {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 480 320' preserveAspectRatio='xMidYMid slice'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.13' stroke-width='1.5'%3E%3Cpath d='M-20 260 C60 200 120 250 200 210 S330 120 420 160 S520 130 520 130'/%3E%3Cpath d='M-20 230 C70 170 130 220 210 180 S330 95 420 130 S520 100 520 100'/%3E%3Cpath d='M-20 200 C80 140 140 190 220 150 S335 70 420 100 S520 70 520 70'/%3E%3Cpath d='M-20 170 C90 110 150 160 230 120 S340 45 420 70 S520 40 520 40'/%3E%3Cpath d='M-20 140 C100 80 160 130 240 90 S345 20 420 40 S520 10 520 10'/%3E%3Cpath d='M-20 290 C50 230 110 280 190 240 S325 150 420 190 S520 160 520 160'/%3E%3Cellipse cx='300' cy='70' rx='46' ry='18'/%3E%3Cellipse cx='300' cy='70' rx='24' ry='8'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+@utility contours-blue {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 480 320' preserveAspectRatio='xMidYMid slice'%3E%3Cg fill='none' stroke='%230b3f8c' stroke-opacity='0.12' stroke-width='1.5'%3E%3Cpath d='M-20 260 C60 200 120 250 200 210 S330 120 420 160 S520 130 520 130'/%3E%3Cpath d='M-20 230 C70 170 130 220 210 180 S330 95 420 130 S520 100 520 100'/%3E%3Cpath d='M-20 200 C80 140 140 190 220 150 S335 70 420 100 S520 70 520 70'/%3E%3Cpath d='M-20 170 C90 110 150 160 230 120 S340 45 420 70 S520 40 520 40'/%3E%3Cpath d='M-20 140 C100 80 160 130 240 90 S345 20 420 40 S520 10 520 10'/%3E%3Cpath d='M-20 290 C50 230 110 280 190 240 S325 150 420 190 S520 160 520 160'/%3E%3Cellipse cx='300' cy='70' rx='46' ry='18'/%3E%3Cellipse cx='300' cy='70' rx='24' ry='8'/%3E%3C/g%3E%3C/svg%3E");
   background-size: cover;
   background-repeat: no-repeat;
 }

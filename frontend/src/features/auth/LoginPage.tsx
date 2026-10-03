@@ -40,35 +40,36 @@ export function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-dvh flex-col bg-bg text-ink md:flex-row">
-      {/* Фирменная часть: синий, изолинии карьера, бирка-логотип */}
-      <section className="relative overflow-hidden bg-bar text-on-bar contours md:flex md:w-[44%] md:flex-col md:justify-between">
-        <div className="flex items-start justify-between gap-4 px-5 pt-[max(20px,env(safe-area-inset-top))] pb-12 md:px-10 md:pt-10">
-          <div className="flex items-stretch gap-3">
-            <span aria-hidden className="relative w-3.5 rounded-[2px] hatch-red">
-              <span className="absolute top-2 left-1/2 size-2 -translate-x-1/2 rounded-full bg-bar" />
-            </span>
-            <div className="py-0.5">
-              <p className="cond text-[40px] leading-none font-bold md:text-[56px]">{t('app.name')}</p>
-              <p className="mt-2 text-body-lg opacity-90">{t('app.slogan')}</p>
-            </div>
-          </div>
+    <main className="flex min-h-dvh flex-col bg-surface text-ink md:flex-row">
+      <section className="relative flex flex-col bg-hero contours-blue dark:contours md:w-[44%] md:justify-center">
+        <div className="flex justify-end px-5 pt-[max(16px,env(safe-area-inset-top))] md:absolute md:top-8 md:right-8 md:p-0">
           <button
             type="button"
             onClick={() => setLanguage(i18n.language === 'kk' ? 'ru' : 'kk')}
-            className="min-h-12 shrink-0 rounded-control border-2 border-white/40 px-3 font-semibold active:bg-white/10"
+            className="min-h-11 rounded-control border border-line bg-surface px-3 text-small font-medium text-ink-2 active:bg-plate"
           >
             {t('common.switchLanguage')}
           </button>
         </div>
-        <ul className="hidden flex-col gap-4 px-10 pb-12 text-body-lg md:flex">
-          {(['loginFeature1', 'loginFeature2', 'loginFeature3'] as const).map((key) => (
-            <li key={key} className="flex items-center gap-3">
-              <span aria-hidden className="h-6 w-1.5 rounded-[1px] bg-yellow" />
-              {t(`login.${key}`)}
-            </li>
-          ))}
-        </ul>
+        <div className="flex flex-col items-center gap-4 px-6 pt-2 pb-10 text-center md:pb-0">
+          <img
+            src="/brand/km-logo.png"
+            alt="АО «Костанайские Минералы»"
+            className="h-24 w-auto dark:hidden md:h-36"
+          />
+          <img
+            src="/brand/km-logo-white.png"
+            alt=""
+            aria-hidden
+            className="hidden h-24 w-auto dark:block md:h-36"
+          />
+          <div>
+            <p className="text-[32px] leading-tight font-bold text-accent md:text-[40px]">
+              {t('app.name')}
+            </p>
+            <p className="mt-1 text-body text-ink-2">{t('app.slogan')}</p>
+          </div>
+        </div>
       </section>
 
       <form
@@ -76,7 +77,7 @@ export function LoginPage() {
           e.preventDefault()
           if (pin.length === PIN_LENGTH) mutation.mutate(pin)
         }}
-        className="relative -mt-6 flex flex-1 flex-col rounded-t-[20px] bg-surface shadow-overlay md:mt-0 md:items-center md:justify-center md:rounded-none md:shadow-none"
+        className="flex flex-1 flex-col md:items-center md:justify-center"
       >
         <div className="mx-auto flex w-full max-w-sm flex-col gap-6 px-5 py-6">
           <h1 className="text-h1 font-semibold">{t('login.title')}</h1>

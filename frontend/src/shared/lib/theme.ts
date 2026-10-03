@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { create } from 'zustand'
 
-/** auto — тёмная в ночную смену (20:00–08:00), светлая днём. */
+/** По умолчанию светлая. auto — тёмная в ночную смену (20:00–08:00), включается в настройках. */
 export type ThemeMode = 'auto' | 'light' | 'dark'
 
 const STORAGE_KEY = 'naryad.theme'
@@ -11,9 +11,9 @@ const DAY_START = 8
 function readMode(): ThemeMode {
   try {
     const value = localStorage.getItem(STORAGE_KEY)
-    return value === 'light' || value === 'dark' ? value : 'auto'
+    return value === 'auto' || value === 'dark' ? value : 'light'
   } catch {
-    return 'auto'
+    return 'light'
   }
 }
 
