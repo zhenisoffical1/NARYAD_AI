@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api import admin, auth, health, insights, orders, reference
+from app.api import admin, auth, demo, health, insights, orders, reference, telegram
 
 api_router = APIRouter(prefix="/api")
 api_router.include_router(health.router)
@@ -10,3 +10,5 @@ api_router.include_router(insights.router)
 api_router.include_router(orders.router)
 api_router.include_router(reference.router)
 api_router.include_router(admin.router)
+api_router.include_router(telegram.router)
+api_router.include_router(demo.router)

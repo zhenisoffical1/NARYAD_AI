@@ -137,14 +137,18 @@ async def notifications(
 ) -> NotificationFeed:
     items = await session.scalars(
         select(Notification)
-        .where(Notification.employee_id == user.id)
+        .where(Notification.employee_id == user.id, Notification.feed.is_(True))
         .order_by(Notification.created_at.desc(), Notification.id.desc())
         .limit(limit)
     )
     unread = await session.scalar(
         select(func.count())
         .select_from(Notification)
-        .where(Notification.employee_id == user.id, Notification.read_at.is_(None))
+        .where(
+            Notification.employee_id == user.id,
+            Notification.feed.is_(True),
+            Notification.read_at.is_(None),
+        )
     )
     return NotificationFeed(
         items=[NotificationOut.model_validate(n) for n in items], unread=int(unread or 0)
@@ -159,7 +163,11 @@ async def mark_read(
 ) -> None:
     stmt = (
         update(Notification)
-        .where(Notification.employee_id == user.id, Notification.read_at.is_(None))
+        .where(
+            Notification.employee_id == user.id,
+            Notification.feed.is_(True),
+            Notification.read_at.is_(None),
+        )
         .values(read_at=utcnow())
     )
     if body.ids:

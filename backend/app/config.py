@@ -57,7 +57,18 @@ class Settings(BaseSettings):
     llm_model: str = "claude-sonnet-5-5"
     llm_fast_model: str = "claude-haiku-4-5-20251001"
 
+    # Контроль сроков (ТЗ 6.1). Все пороги — в минутах.
+    deadline_check_seconds: int = 30
+    remind_before_min: int = 30  # напоминание исполнителю до срока
+    unaccepted_min: int = 10  # эскалация мастеру, если наряд не принят
+    unaccepted_emergency_min: int = 3
+    repeat_min: int = 15  # повтор просрочки и эскалации
+    emergency_repeat_min: int = 1  # аварийный — пока не принят
+    boss_overdue_min: int = 120  # длительная просрочка — руководителю
+
     telegram_bot_token: str | None = None
+    telegram_bot_username: str | None = None  # для ссылки привязки t.me/<имя>?start=…
+    telegram_poll_seconds: float = 2
 
     @property
     def llm_mock(self) -> bool:

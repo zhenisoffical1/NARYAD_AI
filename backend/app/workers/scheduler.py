@@ -10,7 +10,11 @@ from dataclasses import dataclass
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+from app.config import settings
+from app.db import SessionLocal
+from app.services.deadlines import check_deadlines
 from app.services.notifications.bus import bus
+from app.services.notifications.live import commit_and_publish
 
 log = logging.getLogger("naryadai.scheduler")
 
@@ -19,10 +23,18 @@ log = logging.getLogger("naryadai.scheduler")
 class Job:
     name: str
     func: Callable[[], Awaitable[None]]
-    seconds: int
+    seconds: float
 
 
-JOBS: list[Job] = []
+async def deadlines_job() -> None:
+    async with SessionLocal() as session:
+        fired = await check_deadlines(session)
+        await commit_and_publish(session)
+    for item in fired:
+        log.info("Сроки: %s, наряд №%d", item.rule, item.order_number)
+
+
+JOBS: list[Job] = [Job("deadlines", deadlines_job, settings.deadline_check_seconds)]
 
 
 async def main() -> None:
