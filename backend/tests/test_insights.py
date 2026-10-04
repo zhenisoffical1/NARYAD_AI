@@ -97,7 +97,7 @@ async def test_assist_recommends_free_electrician_for_motor(
     assert first["recommended"] is True
     assert first["specialty"] == "электромонтёр"
     assert first["person"]["state"] == "free"
-    assert first["reason"].startswith("свободен · электромонтёр")
+    assert first["reason"].startswith("электромонтёр")
     assert body["fault_code"]["code"].startswith("Э")
 
 

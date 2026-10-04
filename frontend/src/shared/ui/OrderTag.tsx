@@ -38,6 +38,8 @@ interface OrderTagProps {
   highlight?: boolean
   selected?: boolean
   showAssignee?: boolean
+  /** Статус уже понятен из колонки канбана — не повторять его на бирке */
+  hideStatus?: boolean
   onClick?: () => void
 }
 
@@ -48,6 +50,7 @@ export function OrderTag({
   highlight = false,
   selected = false,
   showAssignee = true,
+  hideStatus = false,
   onClick,
 }: OrderTagProps) {
   const { t } = useTranslation()
@@ -96,7 +99,7 @@ export function OrderTag({
             <InvPlate inv={order.equipment.inv_number} compact={compact} />
             <PriorityStamp priority={order.priority} />
           </span>
-          <StatusBadge status={order.status} size={compact ? 'sm' : 'md'} />
+          {!hideStatus && <StatusBadge status={order.status} size={compact ? 'sm' : 'md'} />}
         </span>
 
         <span className={cn('font-semibold', compact ? 'text-small' : 'text-body')}>
@@ -104,8 +107,8 @@ export function OrderTag({
         </span>
         <span
           className={cn(
-            'text-ink-2 [overflow-wrap:anywhere]',
-            compact ? 'line-clamp-1 text-small' : 'line-clamp-2',
+            'line-clamp-2 text-ink-2 [overflow-wrap:anywhere]',
+            compact && 'text-small',
           )}
         >
           {order.description}

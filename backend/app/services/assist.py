@@ -133,17 +133,6 @@ async def _equipment_type_scores(session: AsyncSession, equipment_type: str) -> 
     return {wid: sum(s) / len(s) for wid, s in scores.items() if len(s) >= 2}
 
 
-def _state_text(person: PersonStatus) -> str:
-    if person.state == "free":
-        return "свободен"
-    if person.state == "queue":
-        return f"очередь {person.queue_count}"
-    if person.state == "busy":
-        number = person.current_order.number if person.current_order else None
-        return f"в работе №{number}" if number else "в работе"
-    return "не на смене"
-
-
 async def assist(
     session: AsyncSession, equipment_id: int, description: str, priority: Priority | None
 ) -> Assist:
@@ -171,9 +160,10 @@ async def assist(
         employee = employees[person.employee.id]
         match = employee.specialty == specialty
         score = type_scores.get(employee.id)
-        parts = [_state_text(person), employee.specialty or "специальность не указана"]
+        # Состояние (свободен / очередь) интерфейс показывает меткой — в причине его не повторяем
+        parts = [employee.specialty or "специальность не указана"]
         if score is not None:
-            parts.append(f"оценка по типу «{equipment.type}» — {round(score)}")
+            parts.append(f"средняя оценка по типу «{equipment.type}» — {round(score)}")
         candidates.append(
             Candidate(
                 person=person,

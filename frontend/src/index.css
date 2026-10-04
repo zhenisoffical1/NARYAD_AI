@@ -156,6 +156,16 @@
       opacity: 1;
     }
   }
+  @keyframes drawer-in {
+    from {
+      transform: translateX(32px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
   @keyframes fade-in {
     from {
       opacity: 0;

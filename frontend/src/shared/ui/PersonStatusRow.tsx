@@ -23,6 +23,8 @@ interface PersonStatusRowProps {
   recommendation?: string
   selected?: boolean
   dense?: boolean
+  /** Состояние уже понятно из группы (панель мастера) — метку не показывать */
+  hideBadge?: boolean
   onClick?: () => void
 }
 
@@ -35,6 +37,7 @@ export function PersonStatusRow({
   recommendation,
   selected = false,
   dense = false,
+  hideBadge = false,
   onClick,
 }: PersonStatusRowProps) {
   const { t } = useTranslation()
@@ -62,12 +65,14 @@ export function PersonStatusRow({
         )}
         <span className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
           <span className={cn('font-semibold', dense ? 'text-small' : 'text-body')}>{name}</span>
-          <PersonBadge
-            state={state}
-            orderNumber={orderNumber}
-            queueCount={queueCount}
-            size={dense ? 'sm' : 'md'}
-          />
+          {!hideBadge && (
+            <PersonBadge
+              state={state}
+              orderNumber={orderNumber}
+              queueCount={queueCount}
+              size={dense ? 'sm' : 'md'}
+            />
+          )}
         </span>
         {(specialty || recommendation) && (
           <span className="text-small text-ink-2">

@@ -9,6 +9,9 @@ export type LiveStatus = 'connecting' | 'online' | 'offline'
 
 export const useLiveStatus = create<{ status: LiveStatus }>(() => ({ status: 'connecting' }))
 
+/** Когда наряд последний раз менялся по живому событию — для краткой подсветки карточки. */
+export const useRecentChanges = create<{ changed: Record<number, number> }>(() => ({ changed: {} }))
+
 type Listener = (message: LiveMessage) => void
 const listeners = new Set<Listener>()
 
@@ -18,6 +21,11 @@ const MAX_BACKOFF_MS = 10_000
 function socketUrl(token: string): string {
   const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
   return `${proto}//${window.location.host}/ws?token=${encodeURIComponent(token)}`
+}
+
+function orderIdOf(message: LiveMessage): number | null {
+  const id = message.payload.order_id
+  return typeof id === 'number' ? id : null
 }
 
 /**
@@ -59,9 +67,14 @@ export function useLiveEvents(): void {
         } catch {
           return
         }
-        if (message.type.startsWith('order.')) {
+        if (message.type.startsWith('order.') || message.type === 'assessment.done') {
           void queryClient.invalidateQueries({ queryKey: ['orders'] })
-          void queryClient.invalidateQueries({ queryKey: ['people'] })
+          void queryClient.invalidateQueries({ queryKey: ['shift'] })
+          const id = orderIdOf(message)
+          if (id !== null) markChanged(id)
+        }
+        if (message.type === 'notification.created') {
+          void queryClient.invalidateQueries({ queryKey: ['notifications'] })
         }
         listeners.forEach((listener) => listener(message))
       }
@@ -102,4 +115,26 @@ export function useLiveEvent(type: string, handler: Listener): void {
       listeners.delete(listener)
     }
   }, [type])
+}
+
+const HIGHLIGHT_MS = 1600
+
+function markChanged(orderId: number): void {
+  const at = Date.now()
+  useRecentChanges.setState((s) => ({ changed: { ...s.changed, [orderId]: at } }))
+  window.setTimeout(() => {
+    useRecentChanges.setState((s) => {
+      if (s.changed[orderId] !== at) return s
+      return {
+        changed: Object.fromEntries(
+          Object.entries(s.changed).filter(([id]) => Number(id) !== orderId),
+        ),
+      }
+    })
+  }, HIGHLIGHT_MS)
+}
+
+/** Метка последнего живого изменения наряда (или undefined). Как ключ — перезапускает подсветку. */
+export function useHighlight(orderId: number): number | undefined {
+  return useRecentChanges((s) => s.changed[orderId])
 }

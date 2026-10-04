@@ -13,6 +13,8 @@ const CONTROL =
 
 interface FieldShellProps {
   label: string
+  /** Подпись только для экранного диктора — когда над полем уже есть заголовок */
+  labelHidden?: boolean
   hint?: string
   error?: string | null
   /** Кнопка справа от подписи (например, голосовой ввод) */
@@ -20,17 +22,32 @@ interface FieldShellProps {
   children: (id: string, describedBy: string | undefined) => ReactNode
 }
 
-export function FieldShell({ label, hint, error, action, children }: FieldShellProps) {
+export function FieldShell({ label, labelHidden, hint, error, action, children }: FieldShellProps) {
   const id = useId()
   const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="flex min-h-6 items-end justify-between gap-2">
-        <label htmlFor={id} className="text-small font-semibold text-ink-2">
+      {(!labelHidden || action) && (
+        <div
+          className={cn(
+            'flex min-h-6 items-end gap-2',
+            labelHidden ? 'justify-end' : 'justify-between',
+          )}
+        >
+          <label
+            htmlFor={id}
+            className={cn('text-small font-semibold text-ink-2', labelHidden && 'sr-only')}
+          >
+            {label}
+          </label>
+          {action}
+        </div>
+      )}
+      {labelHidden && !action && (
+        <label htmlFor={id} className="sr-only">
           {label}
         </label>
-        {action}
-      </div>
+      )}
       {children(id, describedBy)}
       {error ? (
         <p id={`${id}-error`} className="flex gap-1.5 text-small font-medium text-red" role="alert">
@@ -49,14 +66,23 @@ export function FieldShell({ label, hint, error, action, children }: FieldShellP
 
 interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string
+  labelHidden?: boolean
   hint?: string
   error?: string | null
   action?: ReactNode
 }
 
-export function TextField({ label, hint, error, action, className, ...rest }: TextFieldProps) {
+export function TextField({
+  label,
+  labelHidden,
+  hint,
+  error,
+  action,
+  className,
+  ...rest
+}: TextFieldProps) {
   return (
-    <FieldShell label={label} hint={hint} error={error} action={action}>
+    <FieldShell label={label} labelHidden={labelHidden} hint={hint} error={error} action={action}>
       {(id, describedBy) => (
         <input
           id={id}
@@ -72,14 +98,24 @@ export function TextField({ label, hint, error, action, className, ...rest }: Te
 
 interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label: string
+  labelHidden?: boolean
   hint?: string
   error?: string | null
   action?: ReactNode
 }
 
-export function TextArea({ label, hint, error, action, className, rows = 3, ...rest }: TextAreaProps) {
+export function TextArea({
+  label,
+  labelHidden,
+  hint,
+  error,
+  action,
+  className,
+  rows = 3,
+  ...rest
+}: TextAreaProps) {
   return (
-    <FieldShell label={label} hint={hint} error={error} action={action}>
+    <FieldShell label={label} labelHidden={labelHidden} hint={hint} error={error} action={action}>
       {(id, describedBy) => (
         <textarea
           id={id}

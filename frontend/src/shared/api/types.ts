@@ -192,6 +192,120 @@ export interface PersonStatus {
   queue_count: number
 }
 
+export interface Section {
+  id: number
+  name: string
+  external_id: string | null
+}
+
+export interface Brigade {
+  id: number
+  name: string
+}
+
+export interface Candidate {
+  person: PersonStatus
+  specialty: string | null
+  grade: number | null
+  specialty_match: boolean
+  equipment_score: number | null
+  reason: string
+  recommended: boolean
+}
+
+export interface FaultSuggestion {
+  id: number
+  code: string
+  name: string
+  norm_hours: string | null
+  confidence: number
+}
+
+export interface Assist {
+  specialty: string
+  fault_code: FaultSuggestion | null
+  order_type: OrderType
+  deadline_hours: number
+  candidates: Candidate[]
+}
+
+export interface OrderCreate {
+  description: string
+  equipment_id: number
+  priority: Priority
+  assignee_id?: number | null
+  brigade_id?: number | null
+  type?: OrderType | null
+  deadline_at?: string | null
+  fault_code_id?: number | null
+  equipment_stopped?: boolean | null
+  comment?: string | null
+}
+
+export interface CompleteBody {
+  works_done: string
+  fault_code_id: number
+  materials: { material_id: number; quantity: string }[]
+  no_materials: boolean
+  comment?: string | null
+}
+
+export interface RatingComponent {
+  key: string
+  label: string
+  weight: number
+  value: number
+  points: number
+  potential: number
+  detail: string
+}
+
+export interface WorkerRating {
+  employee: PersonShort
+  brigade_id: number | null
+  orders: number
+  score: number | null
+  rank: number | null
+  components: RatingComponent[]
+  explanation: string
+}
+
+export interface MyRating extends WorkerRating {
+  total_rated: number
+  period_start: string
+  period_end: string
+}
+
+export interface BrigadeRating {
+  brigade: RefShort
+  members: number
+  orders: number
+  score: number | null
+  components: RatingComponent[]
+}
+
+export interface RatingReport {
+  period_start: string
+  period_end: string
+  workers: WorkerRating[]
+  brigades: BrigadeRating[]
+}
+
+export interface AppNotification {
+  id: number
+  kind: string
+  title: string
+  body: string
+  order_id: number | null
+  created_at: string
+  read_at: string | null
+}
+
+export interface NotificationFeed {
+  items: AppNotification[]
+  unread: number
+}
+
 export interface ShiftSummary {
   shift_start: string
   shift_end: string

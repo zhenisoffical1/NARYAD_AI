@@ -499,7 +499,7 @@ class Generator:
         )
         if plan.planned:
             description = (
-                f"ППР по графику: {eq_spec.type.lower()} {eq_spec.name}"
+                f"ППР по графику: {eq_spec.name}"
                 if plan.tag == "ppr"
                 else f"Плановая ревизия электрооборудования: {eq_spec.name}"
             )
