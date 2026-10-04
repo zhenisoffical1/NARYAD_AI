@@ -4,6 +4,7 @@ import asyncio
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from decimal import Decimal
 
 from sqlalchemy import Select, delete, func, or_, select
 from sqlalchemy.exc import IntegrityError
@@ -98,12 +99,18 @@ HTTP_ACTIONS = frozenset(
     }
 )
 
-DEFAULT_DEADLINE_HOURS = {
-    Priority.EMERGENCY: lambda: settings.deadline_hours_emergency,
-    Priority.HIGH: lambda: settings.deadline_hours_high,
-    Priority.NORMAL: lambda: settings.deadline_hours_normal,
-    Priority.PLANNED: lambda: settings.deadline_hours_planned,
-}
+
+def default_deadline_hours(priority: Priority, norm_hours: Decimal | None = None) -> float:
+    """Срок по приоритету, но не меньше норматива работ с запасом 25%."""
+    by_priority = {
+        Priority.EMERGENCY: settings.deadline_hours_emergency,
+        Priority.HIGH: settings.deadline_hours_high,
+        Priority.NORMAL: settings.deadline_hours_normal,
+        Priority.PLANNED: settings.deadline_hours_planned,
+    }[priority]
+    if norm_hours is None:
+        return by_priority
+    return max(by_priority, float(norm_hours) * 1.25)
 
 
 # --- чтение -------------------------------------------------------------------
@@ -350,15 +357,24 @@ async def create_order(
                 )
             )
 
-    if data.fault_code_id is not None and await session.get(FaultCode, data.fault_code_id) is None:
-        raise Invalid("Шифр неисправности не найден.")
+    norm_hours = data.norm_hours
+    if data.fault_code_id is not None:
+        fault = await session.scalar(
+            select(FaultCode)
+            .where(FaultCode.id == data.fault_code_id)
+            .options(selectinload(FaultCode.norm))
+        )
+        if fault is None:
+            raise Invalid("Шифр неисправности не найден.")
+        if norm_hours is None and fault.norm is not None:
+            norm_hours = fault.norm.norm_hours
 
     if data.deadline_at is not None:
         if data.deadline_at <= now:
             raise Invalid("Срок уже прошёл. Укажите время в будущем.")
         deadline = data.deadline_at
     else:
-        deadline = now + timedelta(hours=DEFAULT_DEADLINE_HOURS[data.priority]())
+        deadline = now + timedelta(hours=default_deadline_hours(data.priority, norm_hours))
 
     order_type = data.type or (
         OrderType.PLANNED if data.priority == Priority.PLANNED else OrderType.UNPLANNED
@@ -383,7 +399,7 @@ async def create_order(
         brigade_id=data.brigade_id or (assignee.brigade_id if assignee else None),
         master_id=master.id,
         deadline_at=deadline,
-        norm_hours=data.norm_hours,
+        norm_hours=norm_hours,
         fault_code_id=data.fault_code_id,
         equipment_stopped=stopped,
         created_at=now,

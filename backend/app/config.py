@@ -38,6 +38,15 @@ class Settings(BaseSettings):
     photo_max_side: int = 1600
     thumb_max_side: int = 480
 
+    # Рейтинг исполнителей: веса составляющих (сумма = 1), обоснование — docs/DECISIONS.md
+    rating_weights: dict[str, float] = {
+        "quality": 0.35,
+        "on_time": 0.25,
+        "no_returns": 0.20,
+        "volume": 0.15,
+        "no_rejects": 0.05,
+    }
+
     # Срок по умолчанию, если мастер не указал (часы) — по приоритету
     deadline_hours_emergency: float = 2
     deadline_hours_high: float = 4

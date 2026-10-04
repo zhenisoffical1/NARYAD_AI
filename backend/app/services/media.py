@@ -2,7 +2,7 @@
 
 import uuid
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from io import BytesIO
 from pathlib import Path
 
@@ -46,9 +46,8 @@ def exif_taken_at(data: bytes) -> datetime | None:
             continue
         try:
             text = raw.decode() if isinstance(raw, bytes) else str(raw)
-            return datetime.strptime(text.strip("\x00 "), "%Y:%m:%d %H:%M:%S").replace(
-                tzinfo=settings.tz
-            )
+            local = datetime.strptime(text.strip("\x00 "), "%Y:%m:%d %H:%M:%S")
+            return local.replace(tzinfo=settings.tz).astimezone(UTC)
         except ValueError:
             continue
     return None

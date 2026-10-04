@@ -255,7 +255,19 @@ async def test_full_cycle_through_api(
         "photo_added",
         "complete",
         "begin_review",
+        "ai_checked",
         "close",
+    ]
+
+    final = (await client.get(f"/api/orders/{oid}", headers=auth_header(master))).json()
+    assert final["assessment"]["status"] == "done"
+    assert final["assessment"]["verdict"] in ("accepted", "accepted_with_remarks")
+    assert [c["key"] for c in final["assessment"]["checks"]] == [
+        "completeness",
+        "time",
+        "materials",
+        "works_match",
+        "photos",
     ]
 
 

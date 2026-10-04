@@ -9,6 +9,7 @@ import piexif
 from PIL import Image, ImageDraw
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.models import (
     Brigade,
     Equipment,
@@ -79,7 +80,8 @@ def jpeg_bytes(
     buf = BytesIO()
     kwargs = {}
     if taken_at is not None:
-        stamp = taken_at.strftime("%Y:%m:%d %H:%M:%S").encode()
+        # Камера пишет местное время без пояса — как телефон на предприятии
+        stamp = taken_at.astimezone(settings.tz).strftime("%Y:%m:%d %H:%M:%S").encode()
         kwargs["exif"] = piexif.dump({"Exif": {piexif.ExifIFD.DateTimeOriginal: stamp}})
     image.save(buf, "JPEG", quality=90, **kwargs)
     return buf.getvalue()

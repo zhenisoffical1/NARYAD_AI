@@ -37,7 +37,22 @@ TOPICS: dict[str, tuple[str, ...]] = {
     "смазка": ("смаз", "солидол", "литол", "маслёнк", "масленк", "сух"),
 }
 
+# Общие темы встречаются почти в любой заявке — они весят меньше конкретных («течь», «подшипник»)
+GENERIC_TOPICS = frozenset({"масло", "гидронасос/давление", "крепёж/вибрация"})
+
 _WORD = re.compile(r"[а-яёa-z0-9]+", re.IGNORECASE)
+
+
+def topic_weight(topic: str) -> float:
+    return 0.5 if topic in GENERIC_TOPICS else 1.0
+
+
+def weighted_overlap(problem: set[str], other: set[str]) -> float:
+    """Доля «веса» тем проблемы, которая есть и в другом тексте (0..1)."""
+    total = sum(topic_weight(t) for t in problem)
+    if not total:
+        return 0.0
+    return sum(topic_weight(t) for t in problem & other) / total
 
 
 def topics_of(text: str) -> set[str]:

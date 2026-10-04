@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, File, Query, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Query, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import get_session
@@ -22,6 +22,7 @@ from app.schemas.orders import (
 from app.services import orders as svc
 from app.services.notifications.live import commit_and_publish
 from app.services.state_machine import Action
+from app.services.verification.runner import run_verification
 
 router = APIRouter(prefix="/orders", tags=["Наряды"])
 
@@ -114,12 +115,15 @@ async def order_action(
 async def complete_order(
     order_id: int,
     body: CompleteRequest,
+    background: BackgroundTasks,
     user: Employee = Depends(require_role(Role.WORKER)),
     session: AsyncSession = Depends(get_session),
 ) -> OrderDetail:
     order = await svc.load_order(session, order_id)
     await svc.complete_order(session, order, user, body)
     await commit_and_publish(session)
+    # Проверка ИИ — после ответа: исполнитель сразу видит экран прогресса
+    background.add_task(run_verification, order_id)
     return await svc.order_detail(session, order_id, user)
 
 
