@@ -240,6 +240,16 @@ body {
   line-height: 24px;
 }
 
+/* Tailwind 4 вернул кнопкам системный курсор; на панели мастера (мышь) нужна «рука» */
+button:not(:disabled),
+[role='button'],
+[role='radio'],
+[role='tab'],
+select,
+label:has(input) {
+  cursor: pointer;
+}
+
 :focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 2px;

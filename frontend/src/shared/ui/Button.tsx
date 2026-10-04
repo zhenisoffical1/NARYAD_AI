@@ -26,11 +26,11 @@ const SIZE: Record<Size, string> = {
 }
 
 const VARIANT: Record<Variant, string> = {
-  primary: 'bg-accent text-on-accent active:bg-accent-press',
-  secondary: 'bg-surface text-ink border-2 border-ink/80 active:bg-plate',
-  quiet: 'bg-transparent text-ink active:bg-plate',
-  danger: 'bg-surface text-red border-2 border-red',
-  inverse: 'bg-on-steel text-steel active:opacity-90',
+  primary: 'bg-accent text-on-accent hover:bg-accent-press active:bg-accent-press',
+  secondary: 'bg-surface text-ink border-2 border-ink/80 hover:bg-plate/60 active:bg-plate',
+  quiet: 'bg-transparent text-ink hover:bg-plate/60 active:bg-plate',
+  danger: 'bg-surface text-red border-2 border-red hover:bg-red-soft/60',
+  inverse: 'bg-on-steel text-steel hover:opacity-90 active:opacity-90',
 }
 
 interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
