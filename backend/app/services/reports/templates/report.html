@@ -110,7 +110,7 @@
 
 {% if report.summary %}
 <section class="summary">
-  {% if report.summary_source == "llm" %}<span class="source">Сводка ИИ</span>{% endif %}{{ report.summary }}
+  <span class="source">{{ "Сводка ИИ" if report.summary_source == "llm" else "Сводка" }}</span>{{ report.summary }}
 </section>
 {% endif %}
 

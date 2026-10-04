@@ -4,6 +4,10 @@ import { LoginPage } from '@/features/auth/LoginPage'
 import { DemoEnterPage } from '@/features/demo/DemoEnterPage'
 import { DemoPage } from '@/features/demo/DemoPage'
 import { DevUiPage } from '@/features/dev/DevUiPage'
+import { AnalyticsPage } from '@/features/desk/AnalyticsPage'
+import { BossPage } from '@/features/desk/BossPage'
+import { RatingDeskPage } from '@/features/desk/RatingDeskPage'
+import { ReportsPage } from '@/features/desk/ReportsPage'
 import { MasterHome } from '@/features/master/MasterHome'
 import { MasterOrderPage } from '@/features/master/MasterOrderPage'
 import { NewOrderPage } from '@/features/master/NewOrderPage'
@@ -55,11 +59,16 @@ export const router = createBrowserRouter([
   },
   {
     element: <RequireRole roles={['master', 'boss', 'admin']} />,
-    children: [{ path: '/panel', element: <PanelPage /> }],
+    children: [
+      { path: '/panel', element: <PanelPage /> },
+      { path: '/panel/analytics', element: <AnalyticsPage /> },
+      { path: '/panel/reports', element: <ReportsPage /> },
+      { path: '/panel/rating', element: <RatingDeskPage /> },
+    ],
   },
   {
     element: <RequireRole roles={['boss', 'admin']} />,
-    children: [{ path: '/boss/*', element: <Screen name="boss" /> }],
+    children: [{ path: '/boss', element: <BossPage /> }],
   },
   {
     element: <RequireRole roles={['admin']} />,

@@ -7,8 +7,7 @@ import { IssueOrderForm } from '@/features/master/IssueOrderForm'
 import { OrderManageActions, OrderManageBody } from '@/features/master/OrderManage'
 import { useShiftLabel, useShiftSummary } from '@/features/master/shift'
 import { ShiftCounters } from '@/features/master/ShiftCounters'
-import { NotificationsBell } from '@/features/orders/NotificationsBell'
-import { setLanguage } from '@/i18n'
+import { DeskHeader } from '@/features/desk/DeskHeader'
 import { fetchOrder, fetchOrders, orderKeys } from '@/shared/api/orders'
 import {
   fetchEquipment,
@@ -22,7 +21,7 @@ import type { OrderListItem, OrderStatus, PersonState, PersonStatus, Priority } 
 import { cn, isToday } from '@/shared/lib/format'
 import { useSession } from '@/shared/lib/session'
 import { useHighlight } from '@/shared/lib/useLiveEvents'
-import { Button, Drawer, Icon, LiveDot, OrderTag, PersonStatusRow, TagSkeleton } from '@/shared/ui'
+import { Button, Drawer, FilterSelect, OrderTag, PersonStatusRow, TagSkeleton } from '@/shared/ui'
 
 const ACTIVE = { active: true, sort: 'urgency' as const, limit: 500 }
 const CLOSED = { status: ['CLOSED' as OrderStatus], limit: 40 }
@@ -50,10 +49,9 @@ const RANK = { emergency: 0, high: 1, normal: 2, planned: 3 } as const
 
 /** Панель смены для мастера и руководителя (десктоп). */
 export function PanelPage() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const [params, setParams] = useSearchParams()
   const user = useSession((s) => s.user)
-  const signOut = useSession((s) => s.signOut)
   const summary = useShiftSummary()
   const shiftLabel = useShiftLabel(summary.data)
   const canIssue = user?.role === 'master' || user?.role === 'admin'
@@ -104,44 +102,17 @@ export function PanelPage() {
 
   return (
     <div className="flex h-dvh flex-col bg-bg text-ink">
-      <header className="flex h-16 shrink-0 items-center gap-4 border-b-4 border-bar-line bg-bar px-5 text-on-bar">
-        <img src="/brand/km-logo-white.png" alt="АО «Костанайские Минералы»" className="h-9 w-auto" />
-        <span aria-hidden className="h-8 w-px bg-white/25" />
-        <div className="min-w-0">
-          <p className="text-h2 leading-tight font-semibold">{t('panel.title')}</p>
-          <p className="truncate text-small opacity-80">{shiftLabel}</p>
-        </div>
-        <div className="ml-auto flex items-center gap-1">
-          <LiveDot withLabel />
-          {canIssue && (
+      <DeskHeader
+        title={t('panel.title')}
+        subtitle={shiftLabel}
+        actions={
+          canIssue && (
             <Button variant="inverse" size="md" icon="plus" className="ml-2" onClick={() => setFilter('new', '1')}>
               {t('master.newOrder')}
             </Button>
-          )}
-          <NotificationsBell />
-          <span aria-hidden className="mx-1 h-8 w-px bg-white/25" />
-          <div className="hidden text-right lg:block">
-            <p className="text-small font-semibold">{user?.short_name}</p>
-            <p className="text-stamp opacity-75">{user ? t(`roles.${user.role}`) : ''}</p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setLanguage(i18n.language === 'kk' ? 'ru' : 'kk')}
-            className="ml-2 min-h-10 rounded-control px-2.5 text-small font-semibold hover:bg-white/10"
-          >
-            {t('common.switchLanguage')}
-          </button>
-          <button
-            type="button"
-            onClick={signOut}
-            aria-label={t('common.logout')}
-            title={t('common.logout')}
-            className="inline-flex size-10 items-center justify-center rounded-control hover:bg-white/10"
-          >
-            <Icon name="logout" size={22} />
-          </button>
-        </div>
-      </header>
+          )
+        }
+      />
 
       <div className="flex shrink-0 flex-wrap items-stretch gap-4 border-b border-line bg-surface px-5 py-3">
         <div className="min-w-[520px] flex-1">
@@ -346,45 +317,5 @@ function OrderDrawer({ orderId, onClose }: { orderId: number; onClose: () => voi
     >
       <div className="p-5">{order ? <OrderManageBody order={order} /> : <TagSkeleton />}</div>
     </Drawer>
-  )
-}
-
-function FilterSelect<V extends string | number>({
-  label,
-  value,
-  onChange,
-  options,
-  all,
-}: {
-  label: string
-  value: V | null
-  onChange: (value: V | null) => void
-  options: { value: V; label: string }[]
-  all: string
-}) {
-  return (
-    <label className="flex flex-col gap-1">
-      <span className="text-stamp font-semibold text-ink-3">{label}</span>
-      <select
-        value={value ?? ''}
-        onChange={(e) => {
-          const raw = e.target.value
-          if (!raw) return onChange(null)
-          const match = options.find((o) => String(o.value) === raw)
-          onChange(match ? match.value : null)
-        }}
-        className={cn(
-          'h-10 max-w-[220px] rounded-control border-2 bg-surface px-2.5 text-small',
-          value ? 'border-accent font-semibold text-accent' : 'border-line text-ink',
-        )}
-      >
-        <option value="">{all}</option>
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-    </label>
   )
 }

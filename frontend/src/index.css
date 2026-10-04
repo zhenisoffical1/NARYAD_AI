@@ -39,6 +39,10 @@
   --bar: #12305a;
   --on-bar: #f1f5f9;
   --bar-line: #0b3f8c;
+  /* Графики: проверены валидатором dataviz (контраст ≥ 3:1, различимость при дальтонизме) */
+  --chart-accent: #1f5ab4;
+  --chart-muted: #738290;
+  --chart-grid: #dce2e8;
   color-scheme: light;
 }
 
@@ -73,6 +77,9 @@
   --hero: #0d1e33;
   --on-bar: #d7ddd9;
   --bar-line: #26323c;
+  --chart-accent: #5e94e8;
+  --chart-muted: #606e7c;
+  --chart-grid: #2a3642;
   color-scheme: dark;
 }
 
@@ -105,6 +112,8 @@
   --color-hero: var(--hero);
   --color-on-bar: var(--on-bar);
   --color-bar-line: var(--bar-line);
+  --color-chart-accent: var(--chart-accent);
+  --color-chart-muted: var(--chart-muted);
 }
 
 @theme {

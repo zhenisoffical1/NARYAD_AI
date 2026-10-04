@@ -59,7 +59,7 @@ export function LiveDot({ withLabel = false }: { withLabel?: boolean }) {
       className="inline-flex min-h-12 items-center gap-2 px-2 text-small"
     >
       <span className={cn('size-2.5 rounded-full', LIVE_DOT[status])} aria-hidden />
-      <span className={withLabel ? '' : 'sr-only'}>{t(`live.${status}`)}</span>
+      <span className={withLabel ? 'whitespace-nowrap' : 'sr-only'}>{t(`live.${status}`)}</span>
     </span>
   )
 }

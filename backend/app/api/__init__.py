@@ -4,6 +4,7 @@ from app.api import (
     admin,
     analytics,
     auth,
+    dashboard,
     demo,
     health,
     insights,
@@ -25,3 +26,4 @@ api_router.include_router(telegram.router)
 api_router.include_router(demo.router)
 api_router.include_router(analytics.router)
 api_router.include_router(reports.router)
+api_router.include_router(dashboard.router)

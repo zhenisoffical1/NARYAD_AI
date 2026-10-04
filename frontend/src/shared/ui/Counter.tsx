@@ -49,7 +49,7 @@ export function CounterBoard({
     <div
       className={cn(
         'gap-px overflow-hidden rounded-[8px] border border-line bg-line',
-        columns ? 'grid' : 'flex flex-wrap',
+        columns ? 'grid' : !className?.includes('grid') && 'flex flex-wrap',
         className,
       )}
       style={columns ? { gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` } : undefined}

@@ -109,3 +109,14 @@ async def test_custom_period_validation(client: AsyncClient, boss) -> None:  # t
     )
     assert resp.status_code == 422
     assert "поменяйте" in resp.json()["detail"].lower()
+
+
+async def test_boss_dashboard(client: AsyncClient, boss) -> None:  # type: ignore[no-untyped-def]
+    resp = await client.get("/api/dashboard?days=30", headers=auth_header(boss))
+    assert resp.status_code == 200, resp.text
+    d = resp.json()
+    assert d["issued"] > 100 and d["done"] > 0
+    assert len(d["trend"]) == 30
+    assert d["top_equipment"][0]["name"] == "Конвейер К-3"
+    assert len(d["best_workers"]) == 5
+    assert d["reaction_minutes"] is not None and d["completion_hours"] is not None
