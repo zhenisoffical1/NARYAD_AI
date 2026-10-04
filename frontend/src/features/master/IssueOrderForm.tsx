@@ -59,6 +59,7 @@ export function IssueOrderForm({ onIssued }: { onIssued: (order: OrderDetail) =>
   const queryClient = useQueryClient()
   const now = useNow(60_000)
   const [photos, setPhotos] = useState<PickedPhoto[]>([])
+  const [photoBusy, setPhotoBusy] = useState(false)
   const [description, setDescription] = useState('')
   const [equipment, setEquipment] = useState<Equipment | null>(null)
   const [priority, setPriority] = useState<Priority | null>(null)
@@ -157,7 +158,7 @@ export function IssueOrderForm({ onIssued }: { onIssued: (order: OrderDetail) =>
     <div className="flex flex-1 flex-col">
       <div className="flex flex-1 flex-col gap-6 px-4 pt-4 pb-6">
         <Step n={1} title={t('issue.photo')} optional>
-          <PhotoPicker label="" value={photos} onChange={setPhotos} />
+          <PhotoPicker label="" value={photos} onChange={setPhotos} onBusyChange={setPhotoBusy} />
         </Step>
 
         <Step n={2} title={t('issue.description')}>
@@ -294,8 +295,8 @@ export function IssueOrderForm({ onIssued }: { onIssued: (order: OrderDetail) =>
             })}
           </p>
         )}
-        <Button size="xl" block icon="send" loading={submit.isPending} onClick={onSubmit}>
-          {t('issue.submit')}
+        <Button size="xl" block icon="send" loading={submit.isPending || photoBusy} onClick={onSubmit}>
+          {photoBusy ? t('ui.photoProcessing') : t('issue.submit')}
         </Button>
       </div>
 

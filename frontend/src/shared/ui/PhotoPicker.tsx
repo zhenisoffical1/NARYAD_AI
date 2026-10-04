@@ -13,9 +13,19 @@ interface PhotoPickerProps {
   label: string
   required?: boolean
   error?: string | null
+  /** Идёт сжатие выбранных фото — форма должна дождаться, прежде чем отправлять */
+  onBusyChange?: (busy: boolean) => void
 }
 
-export function PhotoPicker({ value, onChange, max = 5, label, required, error }: PhotoPickerProps) {
+export function PhotoPicker({
+  value,
+  onChange,
+  max = 5,
+  label,
+  required,
+  error,
+  onBusyChange,
+}: PhotoPickerProps) {
   const { t } = useTranslation()
   const camera = useRef<HTMLInputElement>(null)
   const gallery = useRef<HTMLInputElement>(null)
@@ -28,6 +38,7 @@ export function PhotoPicker({ value, onChange, max = 5, label, required, error }
   const add = async (files: FileList | null) => {
     if (!files?.length) return
     setBusy(true)
+    onBusyChange?.(true)
     try {
       const room = max - latest.current.length
       const picked = await Promise.all(
@@ -41,6 +52,7 @@ export function PhotoPicker({ value, onChange, max = 5, label, required, error }
       onChange([...latest.current, ...picked])
     } finally {
       setBusy(false)
+      onBusyChange?.(false)
       if (camera.current) camera.current.value = ''
       if (gallery.current) gallery.current.value = ''
     }

@@ -149,6 +149,7 @@ export const ru = {
     emergencyAccept: 'Принять в работу',
     emergencyReject: 'Не могу — отклонить',
     increase: 'Больше',
+    photoProcessing: 'Обрабатываем фото…',
     decrease: 'Меньше',
     empty: 'Пусто',
     pinErase: 'Стереть',

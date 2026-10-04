@@ -151,6 +151,7 @@ export const kk: Translation = {
     emergencyAccept: 'Жұмысқа қабылдау',
     emergencyReject: 'Мүмкін емес — бас тарту',
     increase: 'Көбірек',
+    photoProcessing: 'Фотоны өңдеп жатырмыз…',
     decrease: 'Азырақ',
     empty: 'Бос',
     pinErase: 'Өшіру',

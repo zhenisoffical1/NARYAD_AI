@@ -122,6 +122,7 @@ function CloseForm({
   const [comment, setComment] = useState(() => restored?.comment ?? '')
   const [photos, setPhotos] = useState<PickedPhoto[]>([])
   const [photoWarned, setPhotoWarned] = useState(false)
+  const [photoBusy, setPhotoBusy] = useState(false)
   const [uploaded, setUploaded] = useState<Set<string>>(new Set())
   const [progress, setProgress] = useState<string | null>(null)
   const [showMissing, setShowMissing] = useState(false)
@@ -336,6 +337,7 @@ function CloseForm({
             onChange={setPhotos}
             max={5 - afterExisting}
             required={photoRequired}
+            onBusyChange={setPhotoBusy}
             error={showMissing && photoRequired && !hasPhoto ? t('close.photosRequired') : null}
           />
           <p className="mt-2 text-small text-ink-3">
@@ -372,8 +374,8 @@ function CloseForm({
       </main>
 
       <ActionBar>
-        <Button size="xl" block icon="check" loading={submit.isPending} onClick={onSubmit}>
-          {progress ?? t('close.submit')}
+        <Button size="xl" block icon="check" loading={submit.isPending || photoBusy} onClick={onSubmit}>
+          {photoBusy ? t('ui.photoProcessing') : (progress ?? t('close.submit'))}
         </Button>
       </ActionBar>
     </>
