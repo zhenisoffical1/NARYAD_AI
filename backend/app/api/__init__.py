@@ -9,6 +9,7 @@ from app.api import (
     insights,
     orders,
     reference,
+    reports,
     telegram,
 )
 
@@ -23,3 +24,4 @@ api_router.include_router(admin.router)
 api_router.include_router(telegram.router)
 api_router.include_router(demo.router)
 api_router.include_router(analytics.router)
+api_router.include_router(reports.router)
