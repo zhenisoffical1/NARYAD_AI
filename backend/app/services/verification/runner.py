@@ -5,6 +5,7 @@
 исполнителю автоматически; иначе ждёт подтверждения мастера: финальное слово за ним.
 """
 
+import asyncio
 import logging
 from decimal import Decimal
 
@@ -16,6 +17,7 @@ from app.config import settings
 from app.db import SessionLocal
 from app.models import (
     AiAssessment,
+    Employee,
     FaultCode,
     MaterialWriteoff,
     Order,
@@ -25,6 +27,7 @@ from app.models import (
 )
 from app.models.base import utcnow
 from app.models.enums import AssessmentStatus, OrderStatus, PhotoKind, Verdict
+from app.services.llm import anonymize
 from app.services.notifications.bus import bus
 from app.services.notifications.live import (
     STAFF_ROLES,
@@ -36,14 +39,18 @@ from app.services.notifications.notify import notify
 from app.services.state_machine import Action, apply_transition
 from app.services.verification.aggregate import aggregate
 from app.services.verification.facts import ClosureFacts, MaterialFact
-from app.services.verification.llm_check import mock_works_match
-from app.services.verification.photos import check_photos
+from app.services.verification.llm_check import works_match
+from app.services.verification.photos import check_photos, compare_pair, compare_photos
 from app.services.verification.rules import run_rules
 from app.services.verification.texts import VERDICT_LABELS, master_report, worker_report
 
 log = logging.getLogger(__name__)
 
 STEPS = ("completeness", "time", "materials", "works_match", "photos")
+
+
+async def _ready[T](value: T) -> T:
+    return value
 
 
 async def _load(session: AsyncSession, order_id: int) -> Order | None:
@@ -158,13 +165,27 @@ async def _verify(session: AsyncSession, order_id: int) -> None:
     for check in checks:
         await _progress(order, check.key, check.status)
 
-    works = mock_works_match(facts)
+    # Детерминированная часть фото — до вызова модели: дубль или старый снимок ловится без неё
+    photo = await check_photos(session, order)
+    pair = compare_pair(order)
+    names = list(await session.scalars(select(Employee.full_name)))
+    # Два вызова модели — параллельно, чтобы уложиться в 15 секунд
+    works, photo = await asyncio.gather(
+        works_match(facts, names),
+        compare_photos(
+            photo,
+            pair,
+            anonymize(facts.description, names),
+            anonymize(facts.works_done, names),
+        )
+        if pair
+        else _ready(photo),
+    )
     checks.append(works.check)
     await _progress(order, "works_match", works.check.status)
-
-    photo = await check_photos(session, order)
     checks.append(photo.check)
     await _progress(order, "photos", photo.check.status)
+    assessment.mode = "llm" if "llm" in (works.source, photo.source) else "mock"
 
     result = aggregate(checks, min(works.confidence, photo.confidence))
     now = utcnow()

@@ -4,9 +4,14 @@
 грубее, но воспроизводимо и честно сообщает о низкой уверенности.
 """
 
+from collections.abc import Iterable
 from dataclasses import dataclass
+from typing import Literal
+
+from pydantic import BaseModel, Field
 
 from app.models.enums import OrderType
+from app.services.llm import anonymize, ask_json, facts_json, prompt, text_block
 from app.services.verification.facts import CheckResult, ClosureFacts
 from app.services.verification.topics import overlap
 
@@ -19,6 +24,7 @@ class WorksMatch:
     check: CheckResult
     score: float  # 0..1
     confidence: float  # 0..1
+    source: Literal["llm", "rules"] = "rules"
 
 
 def _check(score: float, reason: str) -> CheckResult:
@@ -60,3 +66,58 @@ def mock_works_match(f: ClosureFacts) -> WorksMatch:
         )
     confidence = 0.8 if expected else 0.55
     return WorksMatch(_check(score, reason), score, confidence)
+
+
+# --- LLM -----------------------------------------------------------------------
+
+
+class WorksMatchOut(BaseModel):
+    """Ответ модели. Границы проверяются здесь: API их не ограничивает."""
+
+    match: float = Field(ge=0, le=1)
+    materials_relevant: bool
+    issues: list[str]
+    reason: str = Field(max_length=400)
+    confidence: float = Field(ge=0, le=1)
+
+
+def _llm_facts(f: ClosureFacts, names: Iterable[str]) -> str:
+    return facts_json(
+        {
+            "оборудование": f"{f.equipment} (тип: {f.equipment_type})",
+            "тип наряда": "внеплановый" if f.order_type == OrderType.UNPLANNED else "плановый",
+            "проблема": anonymize(f.description, names),
+            "шифр": f"{f.fault_code} — {f.fault_name}",
+            "что сделано": anonymize(f.works_done, names),
+            "материалы": "без материалов"
+            if f.no_materials
+            else [f"{m.name} — {m.quantity} {m.unit}" for m in f.materials],
+            "комментарий исполнителя": anonymize(f.comment, names) if f.comment else None,
+        }
+    )
+
+
+async def works_match(f: ClosureFacts, names: Iterable[str] = ()) -> WorksMatch:
+    """Соответствие работ: модель, а без неё или при сбое — тематическое сравнение."""
+    fallback = mock_works_match(f)
+    if f.order_type == OrderType.PLANNED:
+        return fallback  # ППР сверяется с регламентом — модели тут нечего добавить
+    out = await ask_json(
+        "works_match",
+        WorksMatchOut,
+        system=prompt("works_match"),
+        content=[text_block(_llm_facts(f, list(names)))],
+    )
+    if out is None:
+        return fallback
+
+    reason = out.reason.strip()
+    check = _check(out.match, reason)
+    check.items = [i.strip() for i in out.issues if i.strip()] or check.items
+    if not out.materials_relevant and not f.no_materials:
+        note = "Списанные материалы не соответствуют выполненным работам."
+        check.items.append(note)
+        check.penalty += 10
+        if check.status == "ok":
+            check.status = "warn"
+    return WorksMatch(check, out.match, out.confidence, source="llm")

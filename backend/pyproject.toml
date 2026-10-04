@@ -20,6 +20,7 @@ dependencies = [
     "imagehash>=4.3",
     "piexif>=1.1",
     "aiogram>=3.13,<4",
+    "anthropic>=1.11,<2",
 ]
 
 [project.optional-dependencies]

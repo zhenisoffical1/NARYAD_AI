@@ -1,0 +1,308 @@
+{
+ "mode": "mock",
+ "accuracy": 0.933,
+ "correct": 28,
+ "total": 30,
+ "cases": [
+  {
+   "key": "good-leak",
+   "label": "accepted",
+   "verdict": "accepted",
+   "score": 100,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.69,
+   "reason": ""
+  },
+  {
+   "key": "good-bearing",
+   "label": "accepted",
+   "verdict": "accepted",
+   "score": 100,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.06,
+   "reason": ""
+  },
+  {
+   "key": "good-bolts",
+   "label": "accepted",
+   "verdict": "accepted",
+   "score": 100,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.05,
+   "reason": ""
+  },
+  {
+   "key": "good-motor",
+   "label": "accepted",
+   "verdict": "accepted",
+   "score": 100,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.05,
+   "reason": ""
+  },
+  {
+   "key": "good-sensor",
+   "label": "accepted",
+   "verdict": "accepted",
+   "score": 100,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.05,
+   "reason": ""
+  },
+  {
+   "key": "good-contactor",
+   "label": "accepted",
+   "verdict": "accepted",
+   "score": 100,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.06,
+   "reason": ""
+  },
+  {
+   "key": "good-weld",
+   "label": "accepted",
+   "verdict": "accepted",
+   "score": 100,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.13,
+   "reason": ""
+  },
+  {
+   "key": "good-ppr-oil",
+   "label": "accepted",
+   "verdict": "accepted",
+   "score": 100,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.05,
+   "reason": ""
+  },
+  {
+   "key": "good-ppr-grease",
+   "label": "accepted",
+   "verdict": "accepted",
+   "score": 100,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.05,
+   "reason": ""
+  },
+  {
+   "key": "good-hydro-oil",
+   "label": "accepted",
+   "verdict": "accepted",
+   "score": 100,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.05,
+   "reason": ""
+  },
+  {
+   "key": "good-hose",
+   "label": "accepted",
+   "verdict": "accepted",
+   "score": 100,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.08,
+   "reason": ""
+  },
+  {
+   "key": "remark-oil-x2",
+   "label": "accepted_with_remarks",
+   "verdict": "accepted_with_remarks",
+   "score": 88,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.07,
+   "reason": "Списано 3 л «Масло индустриальное И-40А» при норме 1,5 л для шифра Г-02 (в 2 раза больше)."
+  },
+  {
+   "key": "remark-slow",
+   "label": "accepted_with_remarks",
+   "verdict": "accepted_with_remarks",
+   "score": 92,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.18,
+   "reason": "Работа заняла 10 ч 24 мин при нормативе 4 ч (в 2,6 раза дольше)."
+  },
+  {
+   "key": "remark-late",
+   "label": "accepted_with_remarks",
+   "verdict": "accepted_with_remarks",
+   "score": 92,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.06,
+   "reason": "Срок нарушен на 40 мин."
+  },
+  {
+   "key": "remark-no-materials",
+   "label": "accepted_with_remarks",
+   "verdict": "accepted_with_remarks",
+   "score": 94,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.08,
+   "reason": "Отмечено «без материалов», а по нормативу шифра М-06 обычно расходуются: Болт М16×60, Гайка М20."
+  },
+  {
+   "key": "remark-odd-material",
+   "label": "accepted_with_remarks",
+   "verdict": "accepted_with_remarks",
+   "score": 90,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.06,
+   "reason": "«Смазка Литол-24» (смазочные) не типичен для шифра Э-02 «Неисправность пускорегулирующей аппаратуры». Проверьте, что материал списан на этот наряд."
+  },
+  {
+   "key": "rework-no-photo-1",
+   "label": "rework",
+   "verdict": "rework",
+   "score": 65,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.05,
+   "reason": "Нет фото «после» — для внепланового наряда оно обязательно."
+  },
+  {
+   "key": "rework-no-photo-2",
+   "label": "rework",
+   "verdict": "rework",
+   "score": 65,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.06,
+   "reason": "Нет фото «после» — для внепланового наряда оно обязательно."
+  },
+  {
+   "key": "rework-oil-x3",
+   "label": "rework",
+   "verdict": "rework",
+   "score": 70,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.05,
+   "reason": "Списано 5 л «Масло индустриальное И-40А» при норме 1,5 л для шифра Г-02 (в 3,3 раза больше)."
+  },
+  {
+   "key": "rework-bolts-x4",
+   "label": "rework",
+   "verdict": "rework",
+   "score": 70,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.06,
+   "reason": "Списано 24 шт «Болт М16×60» при норме 6 шт для шифра М-06 (в 4 раза больше)."
+  },
+  {
+   "key": "rework-mismatch-leak",
+   "label": "rework",
+   "verdict": "rework",
+   "score": 60,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.06,
+   "reason": "Заявлено: гидронасос/давление, масло, течь/уплотнение; в работах: пускатель/автомат. Работы не устраняют заявленную проблему."
+  },
+  {
+   "key": "rework-mismatch-bearing",
+   "label": "rework",
+   "verdict": "rework",
+   "score": 60,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.06,
+   "reason": "Заявлено: подшипник; в работах: гидронасос/давление. Работы не устраняют заявленную проблему."
+  },
+  {
+   "key": "rework-otpiska",
+   "label": "rework",
+   "verdict": "rework",
+   "score": 52,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.06,
+   "reason": "Описание работ слишком короткое — напишите, что именно сделано."
+  },
+  {
+   "key": "rework-dup-1",
+   "label": "rework",
+   "verdict": "rework",
+   "score": 60,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.07,
+   "reason": "Фото «после» совпадает со снимком из наряда №1000 от 04.10 в 16:50. Загрузите новое фото результата."
+  },
+  {
+   "key": "rework-dup-2",
+   "label": "rework",
+   "verdict": "rework",
+   "score": 60,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.06,
+   "reason": "Фото «после» совпадает со снимком из наряда №1001 от 04.10 в 16:50. Загрузите новое фото результата."
+  },
+  {
+   "key": "rework-same-photo",
+   "label": "rework",
+   "verdict": "rework",
+   "score": 65,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.06,
+   "reason": "Фото «после» не отличается от фото «до» — по нему не видно результата работы."
+  },
+  {
+   "key": "rework-old-photo",
+   "label": "rework",
+   "verdict": "rework",
+   "score": 65,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.06,
+   "reason": "Фото «после» снято 01.10 в 15:05 — задолго до выдачи наряда. Сфотографируйте результат этой работы."
+  },
+  {
+   "key": "rework-still-leaking",
+   "label": "rework",
+   "verdict": "accepted",
+   "score": 100,
+   "ok": false,
+   "vision": true,
+   "seconds": 0.14,
+   "reason": ""
+  },
+  {
+   "key": "rework-wrong-equipment",
+   "label": "rework",
+   "verdict": "accepted",
+   "score": 100,
+   "ok": false,
+   "vision": true,
+   "seconds": 0.13,
+   "reason": ""
+  },
+  {
+   "key": "rework-mismatch-motor",
+   "label": "rework",
+   "verdict": "rework",
+   "score": 60,
+   "ok": true,
+   "vision": false,
+   "seconds": 0.06,
+   "reason": "Заявлено: электродвигатель; в работах: лента конвейера. Работы не устраняют заявленную проблему."
+  }
+ ]
+}

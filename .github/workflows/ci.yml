@@ -45,6 +45,8 @@ jobs:
         run: alembic upgrade head && alembic check && alembic downgrade base
       - name: Pytest (PostgreSQL)
         run: pytest
+      - name: Точность ИИ-проверки (30 размеченных случаев, цель ≥ 90%)
+        run: python -m tests.ai_eval
 
   frontend:
     runs-on: ubuntu-latest

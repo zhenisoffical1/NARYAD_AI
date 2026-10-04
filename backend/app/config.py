@@ -56,6 +56,11 @@ class Settings(BaseSettings):
     anthropic_api_key: str | None = None
     llm_model: str = "claude-sonnet-5-5"
     llm_fast_model: str = "claude-haiku-4-5-20251001"
+    # Проверка наряда должна уложиться в 15 с: на один вызов — не больше 12 с, при сбое — правила
+    llm_timeout_seconds: float = 12
+    llm_effort: str = "low"  # классификация по готовым фактам — глубокое рассуждение не нужно
+    # Server-side fallback (Claude API): при отказе модели запрос повторяется на запасной
+    llm_server_fallback: bool = True
 
     # Контроль сроков (ТЗ 6.1). Все пороги — в минутах.
     deadline_check_seconds: int = 30
