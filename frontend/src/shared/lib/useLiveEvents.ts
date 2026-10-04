@@ -73,6 +73,7 @@ export function useLiveEvents(): void {
           const id = orderIdOf(message)
           if (id !== null) markChanged(id)
         }
+        if (message.type === 'demo.reset') void queryClient.invalidateQueries()
         if (message.type === 'notification.created') {
           void queryClient.invalidateQueries({ queryKey: ['notifications'] })
         }

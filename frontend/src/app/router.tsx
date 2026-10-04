@@ -1,11 +1,15 @@
 import { createBrowserRouter } from 'react-router'
 
 import { LoginPage } from '@/features/auth/LoginPage'
+import { DemoEnterPage } from '@/features/demo/DemoEnterPage'
+import { DemoPage } from '@/features/demo/DemoPage'
 import { DevUiPage } from '@/features/dev/DevUiPage'
 import { MasterHome } from '@/features/master/MasterHome'
 import { MasterOrderPage } from '@/features/master/MasterOrderPage'
 import { NewOrderPage } from '@/features/master/NewOrderPage'
 import { PanelPage } from '@/features/panel/PanelPage'
+import { MasterProfilePage } from '@/features/profile/MasterProfilePage'
+import { ProfilePage } from '@/features/profile/ProfilePage'
 import { ClosePage } from '@/features/worker/ClosePage'
 import { RatingPage } from '@/features/worker/RatingPage'
 import { ResultPage } from '@/features/worker/ResultPage'
@@ -21,7 +25,8 @@ export const router = createBrowserRouter([
   { path: '/', element: <HomeRedirect /> },
   { path: '/login', element: <LoginPage /> },
   { path: '/dev/ui', element: <DevUiPage /> },
-  { path: '/demo', element: <Screen name="demo" /> },
+  { path: '/demo', element: <DemoPage /> },
+  { path: '/demo/enter', element: <DemoEnterPage /> },
   {
     element: <RequireRole roles={['worker']} />,
     children: [
@@ -31,6 +36,7 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <WorkerHome /> },
           { path: 'rating', element: <RatingPage /> },
+          { path: 'profile', element: <ProfilePage /> },
           { path: 'orders/:id', element: <WorkerOrderPage /> },
           { path: 'orders/:id/close', element: <ClosePage /> },
           { path: 'orders/:id/result', element: <ResultPage /> },
@@ -43,6 +49,7 @@ export const router = createBrowserRouter([
     children: [
       { path: '/m', element: <MasterHome /> },
       { path: '/m/new', element: <NewOrderPage /> },
+      { path: '/m/profile', element: <MasterProfilePage /> },
       { path: '/m/orders/:id', element: <MasterOrderPage /> },
     ],
   },

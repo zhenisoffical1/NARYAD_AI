@@ -34,6 +34,13 @@ export function WorkerShell() {
               active: pathname.startsWith('/w/rating'),
               onClick: () => navigate('/w/rating'),
             },
+            {
+              key: 'profile',
+              label: t('worker.tabProfile'),
+              icon: 'user',
+              active: pathname.startsWith('/w/profile'),
+              onClick: () => navigate('/w/profile'),
+            },
           ]}
         />
       )}

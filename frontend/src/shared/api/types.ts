@@ -297,6 +297,8 @@ export interface AppNotification {
   title: string
   body: string
   order_id: number | null
+  urgent: boolean
+  data: { reassign_to?: number; reassign_name?: string } | null
   created_at: string
   read_at: string | null
 }

@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from decimal import Decimal
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -89,6 +90,8 @@ class NotificationOut(ORMModel):
     title: str
     body: str
     order_id: int | None
+    urgent: bool = False
+    data: dict[str, Any] | None = None
     created_at: datetime
     read_at: datetime | None
 

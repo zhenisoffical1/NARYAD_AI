@@ -10,7 +10,16 @@ import type { OrderListItem } from '@/shared/api/types'
 import { clock } from '@/shared/lib/format'
 import { useSession } from '@/shared/lib/session'
 import { useHighlight } from '@/shared/lib/useLiveEvents'
-import { Button, EmptyState, OrderTag, PersonStatusRow, Tabs, TagSkeleton, TopBar } from '@/shared/ui'
+import {
+  Button,
+  EmptyState,
+  Icon,
+  OrderTag,
+  PersonStatusRow,
+  Tabs,
+  TagSkeleton,
+  TopBar,
+} from '@/shared/ui'
 
 import { useShiftLabel, useShiftSummary } from './shift'
 import { ShiftCounters } from './ShiftCounters'
@@ -48,7 +57,19 @@ export function MasterHome() {
       <TopBar
         title={t('master.title')}
         subtitle={shiftLabel || user?.short_name}
-        right={<NotificationsBell />}
+        right={
+          <>
+            <NotificationsBell />
+            <button
+              type="button"
+              onClick={() => navigate('/m/profile')}
+              aria-label={t('profile.open')}
+              className="inline-flex size-12 items-center justify-center rounded-control active:bg-white/10"
+            >
+              <Icon name="user" size={24} />
+            </button>
+          </>
+        }
       />
       <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-4 px-4 pt-4 pb-8">
         <ShiftCounters summary={summary.data} layout="grid" onOverdue={() => setTab('decisions')} />

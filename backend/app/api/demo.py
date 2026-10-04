@@ -20,6 +20,7 @@ from app.models import Employee, Order
 from app.models.base import utcnow
 from app.models.enums import (
     ACTIVE_STATUSES,
+    DEADLINE_TRACKED_STATUSES,
     PRIORITY_RANK,
     STATUS_LABELS,
     OrderStatus,
@@ -67,6 +68,7 @@ class DemoOrder(BaseModel):
     assignee: str | None
     deadline_local: str
     overdue: bool
+    can_overdue: bool
     can_escalate: bool
 
 
@@ -145,6 +147,7 @@ async def state(session: AsyncSession = Depends(get_session)) -> DemoState:
                 assignee=o.assignee.short_name if o.assignee else None,
                 deadline_local=local_time(o.deadline_at),
                 overdue=o.deadline_at < now,
+                can_overdue=o.status in DEADLINE_TRACKED_STATUSES,
                 can_escalate=o.status == OrderStatus.ISSUED,
             )
             for o in orders
@@ -189,10 +192,7 @@ async def _run_checks(session: AsyncSession, order: Order, now: datetime) -> Fir
 async def make_overdue(order_id: int, session: AsyncSession = Depends(get_session)) -> Fired:
     """Срок наряда сдвигается на 5 минут назад — планировщик сразу шлёт сообщение о просрочке."""
     order = await _scene_order(session, order_id)
-    if order.status not in ACTIVE_STATUSES or order.status in (
-        OrderStatus.DONE,
-        OrderStatus.AI_REVIEW,
-    ):
+    if order.status not in DEADLINE_TRACKED_STATUSES:
         raise Conflict(f"Наряд №{order.number} уже исполнен — просрочить нечего.")
     now = utcnow()
     order.deadline_at = now - timedelta(minutes=5)

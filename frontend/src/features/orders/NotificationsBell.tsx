@@ -8,8 +8,10 @@ import {
   markNotificationsRead,
   notificationKeys,
 } from '@/shared/api/reference'
+import { reassignOrder } from '@/shared/api/orders'
 import { cn, ddmm, hhmm, isToday } from '@/shared/lib/format'
 import { useSession } from '@/shared/lib/session'
+import { toast } from '@/shared/lib/toast'
 import { BottomSheet, Button, EmptyState, Icon } from '@/shared/ui'
 
 import { orderPath } from './paths'
@@ -77,7 +79,7 @@ export function NotificationsBell({ tone = 'bar' }: { tone?: 'bar' | 'surface' }
               >
                 <span
                   aria-hidden
-                  className={cn('mt-2 size-2 shrink-0 rounded-full', note.read_at ? 'bg-transparent' : 'bg-accent')}
+                  className={cn('mt-2 size-2 shrink-0 rounded-full', note.read_at ? 'bg-transparent' : note.urgent ? 'bg-red' : 'bg-accent')}
                 />
                 <span className="min-w-0 flex-1">
                   <span className={cn('block', note.read_at ? 'font-medium text-ink-2' : 'font-semibold')}>
@@ -91,10 +93,46 @@ export function NotificationsBell({ tone = 'bar' }: { tone?: 'bar' | 'surface' }
                   {isToday(note.created_at) ? hhmm(note.created_at) : ddmm(note.created_at)}
                 </span>
               </button>
+              {note.kind === 'order_escalation' && note.order_id && note.data?.reassign_to && (
+                <ReassignQuick
+                  orderId={note.order_id}
+                  assigneeId={note.data.reassign_to}
+                  name={note.data.reassign_name ?? ''}
+                />
+              )}
             </li>
           ))}
         </ul>
       </BottomSheet>
     </>
+  )
+}
+
+/** Эскалация «не принят»: переназначить на предложенного свободного — одной кнопкой. */
+function ReassignQuick({ orderId, assigneeId, name }: { orderId: number; assigneeId: number; name: string }) {
+  const { t } = useTranslation()
+  const queryClient = useQueryClient()
+  const reassign = useMutation({
+    mutationFn: () => reassignOrder(orderId, assigneeId, t('notifications.reassignComment')),
+    onSuccess: () => {
+      toast(t('notifications.reassigned', { name }))
+      void queryClient.invalidateQueries({ queryKey: ['orders'] })
+    },
+    onError: (error: Error) => toast(error.message, 'error'),
+  })
+  if (reassign.isSuccess) {
+    return (
+      <p className="mb-3 ml-5 inline-flex items-center gap-1.5 text-small font-medium text-green-strong">
+        <Icon name="check" size={16} />
+        {t('notifications.reassigned', { name })}
+      </p>
+    )
+  }
+  return (
+    <div className="mb-3 ml-5">
+      <Button size="md" variant="secondary" icon="swap" loading={reassign.isPending} onClick={() => reassign.mutate()}>
+        {t('notifications.reassign', { name })}
+      </Button>
+    </div>
   )
 }
