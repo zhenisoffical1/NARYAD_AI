@@ -167,6 +167,6 @@ def image_block(jpeg_base64: str) -> dict[str, Any]:
     }
 
 
-def facts_json(data: dict[str, Any]) -> str:
+def facts_json(data: Any) -> str:
     """Факты для промпта — JSON с кириллицей как есть (меньше токенов, читаемо в журнале)."""
     return json.dumps(data, ensure_ascii=False, indent=1, default=str)

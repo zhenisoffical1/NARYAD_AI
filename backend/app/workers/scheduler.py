@@ -12,6 +12,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from app.config import settings
 from app.db import SessionLocal
+from app.services.analytics.digest import weekly_digest
 from app.services.deadlines import check_deadlines
 from app.services.notifications.bus import bus
 from app.services.notifications.live import commit_and_publish
@@ -37,6 +38,13 @@ async def deadlines_job() -> None:
 JOBS: list[Job] = [Job("deadlines", deadlines_job, settings.deadline_check_seconds)]
 
 
+async def digest_job() -> None:
+    async with SessionLocal() as session:
+        count = await weekly_digest(session)
+        await commit_and_publish(session)
+    log.info("Еженедельная сводка отправлена: %d получателей", count)
+
+
 async def main() -> None:
     logging.basicConfig(
         level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s"
@@ -46,6 +54,17 @@ async def main() -> None:
         scheduler.add_job(
             job.func, "interval", seconds=job.seconds, id=job.name, max_instances=1, coalesce=True
         )
+    # Сводка — по понедельникам в 08:00 по времени предприятия, к началу дневной смены
+    scheduler.add_job(
+        digest_job,
+        "cron",
+        day_of_week="mon",
+        hour=8,
+        timezone=settings.timezone,
+        id="weekly_digest",
+        max_instances=1,
+        coalesce=True,
+    )
     scheduler.start()
     log.info("Планировщик запущен, задач: %d", len(JOBS))
     try:
