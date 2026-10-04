@@ -66,6 +66,7 @@ class Order(Base):
     overdue_notified_at: Mapped[datetime | None]
     escalated_at: Mapped[datetime | None]
     boss_notified_at: Mapped[datetime | None]
+    alarm_repeated_at: Mapped[datetime | None]  # повтор аварийного, пока не принят
 
     section: Mapped[Section] = relationship()
     equipment: Mapped[Equipment] = relationship()
@@ -147,5 +148,11 @@ class Notification(Base):
     kind: Mapped[str] = mapped_column(String(40))
     title: Mapped[str] = mapped_column(String(200))
     body: Mapped[str] = mapped_column(Text)
+    urgent: Mapped[bool] = mapped_column(default=False)
+    # Кнопки в Telegram: {"actions": [...], "reassign_to": id, ...}
+    data: Mapped[dict[str, Any] | None]
+    # Только для Telegram (повтор аварийного) — в ленте PWA не показывается
+    feed: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(default=utcnow)
     read_at: Mapped[datetime | None]
+    telegram_sent_at: Mapped[datetime | None] = mapped_column(index=True)
