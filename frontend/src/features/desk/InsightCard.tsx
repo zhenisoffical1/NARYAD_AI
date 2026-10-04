@@ -44,7 +44,7 @@ export function InsightCard({ item, compact = false }: { item: Insight; compact?
         <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
           <div className="min-w-0">
             <p className="text-small font-semibold text-ink-3">
-              {item.title}
+              {t(`analytics.kinds.${item.kind}` as 'analytics.kinds.overview', { defaultValue: item.title })}
               <span className={cn('ml-2', high ? 'text-red' : 'text-ink-3')}>· {t(`analytics.${item.severity}`)}</span>
             </p>
             {item.subject && (

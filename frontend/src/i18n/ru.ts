@@ -480,6 +480,16 @@ export const ru = {
     weeksUnit: 'поломок',
     pairUnit: '',
     sourceRules: 'Цифры — из базы нарядов; текст — по шаблону',
+    kinds: {
+      problem_equipment: 'Проблемное оборудование',
+      worker_returns: 'Частые возвраты после работ',
+      after_ppr: 'Поломки вскоре после ППР',
+      night_shift: 'Отказы в ночную смену',
+      material_overuse: 'Перерасход материалов',
+      repeat_fault: 'Повторяющаяся поломка',
+      growth_trend: 'Рост поломок — риск отказа',
+      overview: 'Сводка за период',
+    },
   },
   reports: {
     title: 'Отчёты',
