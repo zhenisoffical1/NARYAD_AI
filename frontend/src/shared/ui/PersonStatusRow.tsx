@@ -51,11 +51,11 @@ export function PersonStatusRow({
         'flex w-full items-stretch gap-3 text-left',
         dense ? 'min-h-12 py-1.5' : 'min-h-14 py-2',
         onClick && 'rounded-control px-2 active:bg-plate',
-        selected && 'bg-queue-soft outline-2 outline-accent',
+        selected && 'bg-accent-soft outline-2 outline-accent',
         state === 'off_shift' && 'text-ink-3',
       )}
     >
-      <span aria-hidden className={cn('w-1.5 shrink-0 rounded-[1px]', STATE_BAR[state])} />
+      <span aria-hidden className={cn('w-1 shrink-0 rounded-full', STATE_BAR[state])} />
       <span className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
         {recommendation && (
           <span className="stamp inline-flex items-center gap-1 text-accent">

@@ -10,12 +10,12 @@
     @bottom-left {
       content: "АО «Костанайские Минералы» · НарядAI · {{ report.title }}";
       font: 7.5pt "Roboto", "DejaVu Sans", sans-serif;
-      color: #56677a;
+      color: #657080;
     }
     @bottom-right {
       content: "стр. " counter(page) " из " counter(pages);
       font: 7.5pt "Roboto", "DejaVu Sans", sans-serif;
-      color: #56677a;
+      color: #657080;
     }
   }
   * { box-sizing: border-box; }
@@ -24,15 +24,15 @@
     font-family: "Roboto", "DejaVu Sans", sans-serif;
     font-size: 9pt;
     line-height: 1.35;
-    color: #1d2d3e;
+    color: #172230;
   }
   header {
     display: flex;
     align-items: center;
     gap: 5mm;
     padding: 4mm 5mm;
-    background: #12305a;
-    border-bottom: 1.2mm solid #0b3f8c;
+    background: linear-gradient(110deg, #0b3f8c 0%, #1660c9 55%, #0e97a6 100%);
+    border-bottom: 0;
     color: #f1f5f9;
   }
   header img { height: 11mm; }
@@ -43,26 +43,26 @@
   .kpis {
     display: flex;
     margin: 5mm 0 4mm;
-    border: 0.25mm solid #c6cfd8;
+    border: 0.25mm solid #dfe3e9;
     border-radius: 1.5mm;
-    background: #dce2e8;
+    background: #edf0f4;
   }
-  .kpi { flex: 1; padding: 2.5mm 3.5mm; border-left: 0.25mm solid #c6cfd8; }
+  .kpi { flex: 1; padding: 2.5mm 3.5mm; border-left: 0.25mm solid #dfe3e9; }
   .kpi:first-child { border-left: none; }
-  .kpi .label { font-size: 7pt; font-weight: 600; letter-spacing: .02em; color: #56677a; }
+  .kpi .label { font-size: 7pt; font-weight: 600; letter-spacing: .02em; color: #657080; }
   .kpi .value {
     font-size: 15pt;
     font-weight: 700;
     font-stretch: 85%;
     font-variant-numeric: tabular-nums;
   }
-  .kpi.danger .value { color: #c8231c; }
-  .kpi.ok .value { color: #257434; }
+  .kpi.danger .value { color: #c8281c; }
+  .kpi.ok .value { color: #17723a; }
   .summary {
     margin: 0 0 5mm;
     padding: 3mm 4mm;
     border-left: 1mm solid #0b3f8c;
-    background: #f6f8fa;
+    background: #e6eefb;
     white-space: pre-line;
   }
   .summary .source { display: block; margin-bottom: 1mm; font-size: 7pt; font-weight: 600; color: #0b3f8c; }
@@ -72,21 +72,21 @@
   tr { page-break-inside: avoid; }
   th {
     padding: 1.6mm 2mm;
-    background: #dce2e8;
-    border-bottom: 0.4mm solid #1d2d3e;
+    background: #edf0f4;
+    border-bottom: 0.4mm solid #172230;
     font-size: 7.5pt;
     font-weight: 600;
     text-align: left;
-    color: #3d4d5e;
+    color: #44505f;
   }
-  td { padding: 1.4mm 2mm; border-bottom: 0.2mm solid #c6cfd8; vertical-align: top; }
+  td { padding: 1.4mm 2mm; border-bottom: 0.2mm solid #dfe3e9; vertical-align: top; }
   .right { text-align: right; font-variant-numeric: tabular-nums; }
-  tr.flag td { background: #f8dedb; }
-  tr.flag td:first-child { box-shadow: inset 0.8mm 0 0 #c8231c; }
-  .facts td:first-child { width: 32mm; color: #56677a; }
+  tr.flag td { background: #fdedeb; }
+  tr.flag td:first-child { box-shadow: inset 0.8mm 0 0 #c8281c; }
+  .facts td:first-child { width: 32mm; color: #657080; }
   .facts thead { display: none; }
-  .note { margin: 1.5mm 0 0; font-size: 7.5pt; color: #56677a; }
-  .empty { padding: 3mm 0; color: #56677a; }
+  .note { margin: 1.5mm 0 0; font-size: 7.5pt; color: #657080; }
+  .empty { padding: 3mm 0; color: #657080; }
 </style>
 </head>
 <body>

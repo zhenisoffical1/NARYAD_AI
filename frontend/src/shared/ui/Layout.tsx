@@ -43,7 +43,7 @@ export function SectionTitle({
         {count !== undefined && (
           <span
             className={cn(
-              'cond inline-flex h-5 min-w-5 items-center justify-center rounded-[3px] px-1 text-stamp',
+              'cond inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-stamp font-semibold',
               tone === 'danger' ? 'bg-red-strong text-white' : 'bg-plate text-ink-2',
             )}
           >
@@ -69,10 +69,10 @@ export function Panel({
   action?: ReactNode
 }) {
   return (
-    <section className={cn('rounded-[8px] border border-line bg-surface', className)}>
+    <section className={cn('rounded-[12px] border border-line bg-surface shadow-card', className)}>
       {title && (
-        <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-2.5">
-          <h3 className="text-small font-semibold text-ink-2">{title}</h3>
+        <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
+          <h3 className="text-small font-semibold text-ink">{title}</h3>
           {action}
         </div>
       )}
@@ -88,7 +88,7 @@ export function TabBar({
   items: { key: string; label: string; icon: IconName; active: boolean; badge?: number; onClick: () => void }[]
 }) {
   return (
-    <nav className="sticky bottom-0 z-20 grid auto-cols-fr grid-flow-col border-t border-line bg-surface pb-[env(safe-area-inset-bottom)]">
+    <nav className="sticky bottom-0 z-20 grid auto-cols-fr grid-flow-col border-t border-line bg-surface pt-1.5 pb-[env(safe-area-inset-bottom)]">
       {items.map((item) => (
         <button
           key={item.key}
@@ -97,11 +97,15 @@ export function TabBar({
           aria-current={item.active ? 'page' : undefined}
           className={cn(
             'relative flex min-h-16 flex-col items-center justify-center gap-1 text-small font-medium',
-            item.active ? 'text-accent' : 'text-ink-3',
+            item.active ? 'font-semibold text-accent' : 'text-ink-3',
           )}
         >
-          {item.active && <span aria-hidden className="absolute top-0 h-[3px] w-12 rounded-b bg-accent" />}
-          <span className="relative">
+          <span
+            className={cn(
+              'relative inline-flex h-8 w-16 items-center justify-center rounded-full transition-colors',
+              item.active && 'bg-accent-soft',
+            )}
+          >
             <Icon name={item.icon} size={26} />
             {item.badge ? (
               <span className="cond absolute -top-1.5 -right-3 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-red-strong px-1 text-stamp text-white">
@@ -154,7 +158,7 @@ export function ToggleRow({
         aria-hidden
         className={cn(
           'relative inline-flex h-8 w-14 shrink-0 items-center rounded-full transition-colors',
-          checked ? 'bg-accent' : 'bg-plate',
+          checked ? 'bg-accent bg-grad-primary' : 'bg-line',
         )}
       >
         <span

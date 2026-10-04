@@ -51,15 +51,16 @@ export function LoginPage() {
   )
 
   return (
-    <main className="flex min-h-dvh flex-col bg-bg text-ink md:flex-row">
+    <main className="flex min-h-dvh flex-col bg-bg bg-grad-page text-ink md:flex-row">
       {/* Фирменная часть */}
-      <section className="flex flex-col items-center justify-center gap-5 bg-hero px-6 pt-[max(28px,env(safe-area-inset-top))] pb-8 text-center contours md:w-[42%] md:gap-8">
+      <section className="relative flex flex-col items-center justify-center gap-5 overflow-hidden bg-hero bg-grad-bar px-6 pt-[max(28px,env(safe-area-inset-top))] pb-8 text-center md:w-[42%] md:gap-8">
+        <span aria-hidden className="absolute inset-0 contours" />
         <img
           src="/brand/km-logo-white.png"
           alt="АО «Костанайские Минералы»"
-          className="h-20 w-auto md:h-32"
+          className="relative h-20 w-auto md:h-32"
         />
-        <p className="border-t border-white/20 pt-4 text-[28px] leading-none font-semibold tracking-tight text-white md:pt-6 md:text-[36px]">
+        <p className="relative border-t border-white/20 pt-4 text-[28px] leading-none font-semibold tracking-tight text-white md:pt-6 md:text-[36px]">
           {t('app.name')}
         </p>
       </section>
@@ -73,11 +74,11 @@ export function LoginPage() {
               e.preventDefault()
               if (pin.length === PIN_LENGTH) mutation.mutate(pin)
             }}
-            className="flex w-full max-w-[400px] flex-col gap-6 rounded-[10px] border border-line bg-surface px-5 py-6 shadow-[0_1px_2px_rgb(29_45_62/0.06),0_8px_24px_rgb(29_45_62/0.08)] md:px-8 md:py-8"
+            className="flex w-full max-w-[400px] flex-col gap-6 rounded-[16px] border border-line bg-surface px-5 py-6 shadow-[0_1px_2px_rgb(23_34_48/0.05),0_18px_40px_-18px_rgb(11_63_140/0.35)] md:px-8 md:py-8"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h1 className="text-h1 font-semibold">{t('login.title')}</h1>
+                <h1 className="text-h1 font-bold">{t('login.title')}</h1>
                 <p className="mt-1 text-small text-ink-3">{t('login.subtitle')}</p>
               </div>
               <div className="md:hidden">{languageButton}</div>

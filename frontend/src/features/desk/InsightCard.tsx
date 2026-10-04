@@ -38,7 +38,7 @@ export function InsightCard({ item, compact = false }: { item: Insight; compact?
     >
       <span
         aria-hidden
-        className={cn('absolute inset-y-0 left-0 w-1.5', high ? 'bg-red' : info ? 'bg-chart-muted' : 'bg-steel')}
+        className={cn('absolute inset-y-0 left-0 w-1.5', high ? 'bg-red' : info ? 'bg-chart-muted' : 'bg-accent')}
       />
       <div className="flex flex-col gap-3 py-4 pr-5">
         <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
@@ -83,7 +83,7 @@ export function InsightCard({ item, compact = false }: { item: Insight; compact?
         </div>
 
         {item.recommendation && (
-          <div className="flex gap-3 rounded-[4px] bg-plate/70 px-3.5 py-3">
+          <div className="flex gap-3 rounded-[8px] bg-accent-soft/70 px-3.5 py-3">
             <Icon name="wrench" size={20} className="mt-0.5 shrink-0 text-ink-2" />
             <div>
               <p className="text-small font-semibold text-ink-2">{t('analytics.recommendation')}</p>

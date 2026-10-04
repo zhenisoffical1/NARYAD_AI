@@ -12,7 +12,7 @@ const LIVE_DOT = {
   offline: 'bg-red',
 } as const
 
-/** Стальная плашка сверху экрана: назад, заголовок, связь, действия справа. */
+/** Фирменная шапка экрана (градиент КМ): назад, заголовок, связь, действия справа. */
 export function TopBar({
   title,
   subtitle,
@@ -26,7 +26,7 @@ export function TopBar({
 }) {
   const { t } = useTranslation()
   return (
-    <header className="sticky top-0 z-30 flex min-h-14 items-center gap-1 border-b-4 border-bar-line bg-bar pt-[env(safe-area-inset-top)] pr-2 pl-1 text-on-bar">
+    <header className="sticky top-0 z-30 flex min-h-16 items-center gap-1 bg-bar bg-grad-bar pt-[env(safe-area-inset-top)] pr-2 pl-1 text-on-bar shadow-[0_6px_18px_-12px_rgb(11_63_140/0.9)]">
       {onBack ? (
         <button
           type="button"
@@ -40,7 +40,7 @@ export function TopBar({
         <span className="w-3" />
       )}
       <div className="min-w-0 flex-1 py-2">
-        <h1 className="truncate text-h2 font-semibold">{title}</h1>
+        <h1 className="truncate text-h2 font-bold">{title}</h1>
         {subtitle && <p className="truncate text-small opacity-80">{subtitle}</p>}
       </div>
       <LiveDot />

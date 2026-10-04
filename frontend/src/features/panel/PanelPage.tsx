@@ -107,14 +107,14 @@ export function PanelPage() {
         subtitle={shiftLabel}
         actions={
           canIssue && (
-            <Button variant="inverse" size="md" icon="plus" className="ml-2" onClick={() => setFilter('new', '1')}>
+            <Button variant="cta" size="md" icon="plus" className="ml-2" onClick={() => setFilter('new', '1')}>
               {t('master.newOrder')}
             </Button>
           )
         }
       />
 
-      <div className="flex shrink-0 flex-wrap items-stretch gap-4 border-b border-line bg-surface px-5 py-3">
+      <div className="flex shrink-0 flex-wrap items-stretch gap-4 border-b border-line bg-surface px-5 py-3 bg-grad-page">
         <div className="min-w-[520px] flex-1">
           <ShiftCounters summary={summary.data} onOverdue={() => setFilter('priority', null)} />
         </div>
@@ -166,7 +166,7 @@ export function PanelPage() {
       </div>
 
       <div className="flex min-h-0 flex-1">
-        <aside className="flex w-[264px] shrink-0 flex-col overflow-y-auto border-r border-line bg-surface">
+        <aside className="flex w-[232px] shrink-0 flex-col overflow-y-auto border-r border-line bg-surface">
           <h2 className="sticky top-0 z-10 border-b border-line bg-surface px-4 py-3 text-small font-semibold text-ink-2">
             {t('panel.peopleTitle')}
           </h2>
@@ -178,26 +178,26 @@ export function PanelPage() {
         </aside>
 
         <main className="min-w-0 flex-1 overflow-x-auto">
-          <div className="grid h-full min-w-[1020px] grid-cols-6 gap-2.5 p-3">
+          <div className="grid h-full min-w-[1020px] grid-cols-6 gap-2 p-3">
             {columns.map((column) => (
-              <section key={column.key} className="flex min-h-0 flex-col rounded-[8px] bg-plate/60">
+              <section key={column.key} className="flex min-h-0 flex-col rounded-[12px] bg-plate/80">
                 <h3
                   className={cn(
                     'flex items-center justify-between gap-2 border-b-2 px-3 py-2.5 text-small font-semibold',
-                    column.key === 'overdue' ? 'border-red text-red' : 'border-line text-ink-2',
+                    column.key === 'overdue' ? 'border-red text-red' : 'border-transparent text-ink',
                   )}
                 >
                   {t(column.title as 'panel.colIssued')}
                   <span
                     className={cn(
-                      'cond inline-flex h-6 min-w-6 items-center justify-center rounded-[3px] px-1.5',
+                      'cond inline-flex h-6 min-w-6 items-center justify-center rounded-full px-2',
                       column.key === 'overdue' && column.items.length ? 'bg-red-strong text-white' : 'bg-surface text-ink',
                     )}
                   >
                     {column.items.length}
                   </span>
                 </h3>
-                <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-2">
+                <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-1.5 pb-2">
                   {active.isPending && <TagSkeleton />}
                   {column.items.map((order) => (
                     <KanbanCard

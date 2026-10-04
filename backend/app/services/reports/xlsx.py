@@ -11,14 +11,14 @@ from openpyxl.worksheet.worksheet import Worksheet
 from app.services.reports.model import Report, Table, fmt_dt
 
 # Палитра дизайн-системы (docs/DESIGN.md)
-BAR = "12305A"
-INK = "1D2D3E"
-INK_3 = "56677A"
-PLATE = "DCE2E8"
-LINE = "C6CFD8"
-RED = "C8231C"
-RED_SOFT = "F8DEDB"
-GREEN = "257434"
+BAR = "0B3F8C"
+INK = "172230"
+INK_3 = "657080"
+PLATE = "EDF0F4"
+LINE = "DFE3E9"
+RED = "C8281C"
+RED_SOFT = "FDEDEB"
+GREEN = "17723A"
 
 THIN = Side(style="thin", color=LINE)
 GRID = Border(left=THIN, right=THIN, top=THIN, bottom=THIN)

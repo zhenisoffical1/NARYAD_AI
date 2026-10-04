@@ -42,7 +42,7 @@ export function AnalyticsPage() {
   const overview = shown?.items.find((i) => i.severity === 'info')
 
   return (
-    <div className="flex min-h-dvh flex-col bg-bg text-ink">
+    <div className="flex min-h-dvh flex-col bg-bg bg-grad-page text-ink">
       <DeskHeader title={t('analytics.title')} subtitle={t('analytics.subtitle')} />
 
       <main className="mx-auto flex w-full max-w-[1100px] flex-col gap-4 px-5 py-5">

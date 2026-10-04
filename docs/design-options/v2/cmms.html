@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Вариант А — Система ТОиР</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --page: #F4F5F7; --surface: #fff; --ink: #172230; --ink-2: #44505F; --muted: #6B7685; --line: #E1E4E9; --line-2: #EDEFF2;
+  --km: #0B3F8C; --km-600: #0A3577; --km-50: #EEF3FB; --km-100: #D9E4F5;
+  --red: #C8281C; --red-50: #FDEDEB; --amber: #8A5A00; --amber-50: #FFF4D6; --amber-dot: #E5A800;
+  --green: #17723A; --green-50: #E5F4EA; --blue: #2F5FC4; --blue-50: #E8EFFC; --grey: #8A9299;
+}
+body { width: 1600px; height: 1000px; overflow: hidden; background: #C9CED6; font-family: 'IBM Plex Sans', sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; font-size: 14px; }
+.stage { display: flex; gap: 40px; padding: 30px 32px; align-items: flex-start; }
+.ic { width: 18px; height: 18px; flex-shrink: 0; }
+
+/* окно браузера */
+.win { width: 1110px; height: 940px; background: var(--page); border-radius: 10px; overflow: hidden; box-shadow: 0 30px 70px -25px rgba(20,30,50,.45), 0 0 0 1px rgba(20,30,50,.12); display: flex; flex-direction: column; }
+.chrome { height: 38px; background: #E6E8EC; display: flex; align-items: center; gap: 14px; padding: 0 14px; border-bottom: 1px solid #D5D9DF; flex-shrink: 0; }
+.dots { display: flex; gap: 7px; } .dots b { width: 11px; height: 11px; border-radius: 50%; background: #CBCFD5; }
+.urlbar { flex: 1; max-width: 520px; height: 24px; border-radius: 6px; background: #fff; font: 12.5px 'Roboto'; color: #5B6470; display: flex; align-items: center; padding: 0 10px; gap: 6px; }
+.urlbar span { color: #9AA1AA; }
+
+.app { flex: 1; display: grid; grid-template-columns: 60px 1fr; min-height: 0; }
+.rail { background: var(--km); display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 4px; }
+.rail .logo { width: 40px; height: 40px; border-radius: 8px; background: #fff; display: grid; place-items: center; margin-bottom: 12px; }
+.rail .logo img { width: 34px; height: 20px; object-fit: cover; object-position: top; }
+.rail a { width: 44px; height: 44px; border-radius: 8px; display: grid; place-items: center; color: #B8C9E6; position: relative; }
+.rail a.on { background: rgba(255,255,255,.14); color: #fff; }
+.rail a .ic { width: 21px; height: 21px; }
+.rail a em { position: absolute; top: 6px; right: 6px; min-width: 16px; height: 16px; border-radius: 8px; background: #E5484D; color: #fff; font: 700 10px/16px 'Roboto'; font-style: normal; text-align: center; padding: 0 4px; }
+.rail .bottom { margin-top: auto; }
+
+.work { display: flex; flex-direction: column; min-width: 0; }
+.topbar { height: 56px; background: var(--surface); border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 16px; padding: 0 20px; flex-shrink: 0; }
+.search { width: 340px; height: 36px; border: 1px solid var(--line); border-radius: 6px; display: flex; align-items: center; gap: 8px; padding: 0 10px; color: var(--muted); font-size: 13.5px; background: #FAFBFC; }
+.search kbd { margin-left: auto; font: 11px 'Roboto'; border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; color: var(--muted); background: #fff; }
+.shift { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--ink-2); border: 1px solid var(--line); border-radius: 6px; padding: 7px 10px; }
+.shift b { font-weight: 600; color: var(--ink); }
+.tb-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+.conn { font-size: 12.5px; color: var(--green); display: flex; align-items: center; gap: 6px; }
+.conn::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #22A04B; }
+.iconbtn { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 6px; color: var(--ink-2); position: relative; }
+.iconbtn em { position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; border-radius: 50%; background: #E5484D; border: 2px solid #fff; }
+.me { display: flex; align-items: center; gap: 9px; font-size: 13px; }
+.me b { display: block; font-weight: 600; } .me span { color: var(--muted); font-size: 12px; }
+.av { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font: 600 12px 'IBM Plex Sans'; color: #fff; flex-shrink: 0; }
+
+.pagehead { padding: 16px 20px 0; background: var(--surface); border-bottom: 1px solid var(--line); flex-shrink: 0; }
+.ph-row { display: flex; align-items: center; gap: 14px; }
+.ph-row h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+.stats { display: flex; gap: 6px; margin-left: 10px; }
+.stat { font-size: 12.5px; color: var(--ink-2); background: var(--page); border-radius: 5px; padding: 4px 8px; }
+.stat b { font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+.stat.bad { background: var(--red-50); color: var(--red); } .stat.bad b { color: var(--red); }
+.btn { white-space: nowrap; height: 36px; padding: 0 14px; border-radius: 6px; display: inline-flex; align-items: center; gap: 7px; font-weight: 600; font-size: 13.5px; }
+.btn.primary { background: var(--km); color: #fff; margin-left: auto; }
+.btn.ghost { border: 1px solid var(--line); color: var(--ink-2); background: #fff; }
+.tabs { display: flex; gap: 22px; margin-top: 12px; }
+.tabs a { padding: 9px 0 11px; font-size: 13.5px; color: var(--muted); font-weight: 500; border-bottom: 2px solid transparent; display: flex; gap: 6px; align-items: center; }
+.tabs a.on { color: var(--km); border-color: var(--km); font-weight: 600; }
+.tabs a em { font-style: normal; font-size: 11.5px; background: var(--page); color: var(--ink-2); border-radius: 9px; padding: 0 6px; font-weight: 600; }
+.tabs a.on em { background: var(--km-100); color: var(--km); }
+.tabs a.alert em { background: var(--red); color: #fff; }
+
+.split { flex: 1; display: grid; grid-template-columns: 410px 1fr; min-height: 0; }
+.list { border-right: 1px solid var(--line); background: var(--surface); overflow: hidden; }
+.lhead { display: flex; justify-content: space-between; padding: 10px 16px; font-size: 12.5px; color: var(--muted); border-bottom: 1px solid var(--line-2); }
+.lhead span { display: flex; align-items: center; gap: 4px; color: var(--ink-2); }
+.lhead .ic { width: 14px; height: 14px; }
+.row > div:nth-child(2) { min-width: 0; }
+.row { display: grid; grid-template-columns: 4px minmax(0,1fr) auto; gap: 0 12px; padding: 12px 16px 12px 0; border-bottom: 1px solid var(--line-2); position: relative; }
+.row.sel { background: var(--km-50); }
+.row.sel::after { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: var(--km); }
+.prio { border-radius: 0 3px 3px 0; }
+.p-em { background: repeating-linear-gradient(-45deg, #C8281C 0 4px, #fff 4px 7px); }
+.p-hi { background: #E5484D; } .p-no { background: #AEB5BE; } .p-pl { background: transparent; }
+.r-top { display: flex; align-items: baseline; gap: 8px; }
+.r-num { font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; }
+.r-inv { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.r-title { font-weight: 600; font-size: 14px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.r-desc { font-size: 13px; color: var(--ink-2); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.r-meta { display: flex; align-items: center; gap: 6px; margin-top: 7px; font-size: 12.5px; color: var(--muted); }
+.r-meta .av { width: 20px; height: 20px; font-size: 9px; }
+.r-side { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.time { font-size: 12.5px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.time.late { color: var(--red); font-weight: 600; }
+.pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 3px 8px 3px 7px; border-radius: 4px; white-space: nowrap; }
+.pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.s-new { background: var(--red-50); color: var(--red); }
+.s-work { background: var(--amber-50); color: var(--amber); } .s-work::before { background: var(--amber-dot); }
+.s-queue { background: var(--blue-50); color: var(--blue); }
+.s-ai { background: #EEF0F3; color: #3D4652; }
+.s-ok { background: var(--green-50); color: var(--green); }
+
+.detail { overflow: hidden; padding: 18px 22px; display: flex; flex-direction: column; gap: 14px; }
+.d-head { display: flex; align-items: flex-start; gap: 12px; }
+.d-head .crumbs { font-size: 12.5px; color: var(--muted); display: flex; gap: 6px; align-items: center; }
+.d-head .crumbs .ic { width: 13px; height: 13px; }
+.d-head h2 { font-size: 21px; font-weight: 600; margin-top: 4px; letter-spacing: -0.01em; }
+.d-head h2 small { font-weight: 500; color: var(--muted); font-size: 21px; margin-right: 6px; font-variant-numeric: tabular-nums; }
+.d-actions { margin-left: auto; display: flex; gap: 8px; }
+.banner { display: flex; gap: 10px; align-items: center; background: var(--red-50); border: 1px solid #F5C9C4; border-radius: 6px; padding: 9px 12px; color: #8E1C13; font-size: 13.5px; }
+.banner .ic { color: var(--red); }
+.banner b { font-weight: 600; }
+.banner a { margin-left: auto; font-weight: 600; color: var(--km); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.eq { display: grid; grid-template-columns: 88px 1fr; gap: 14px; padding: 12px; }
+.eq-pic { height: 72px; border-radius: 6px; background: #EEF1F4; display: grid; place-items: center; }
+.eq-pic svg { width: 64px; height: 50px; }
+.eq h3 { font-size: 15px; font-weight: 600; }
+.eq .sub { font-size: 13px; color: var(--muted); margin-top: 2px; display: flex; gap: 12px; }
+.eq .sub span { display: flex; align-items: center; gap: 4px; } .eq .sub .ic { width: 14px; height: 14px; }
+.eq .hist { font-size: 12.5px; margin-top: 8px; color: var(--ink-2); }
+.eq .hist b { color: var(--red); font-weight: 600; }
+.fields { display: grid; grid-template-columns: 1.1fr 1.3fr .8fr 1.2fr; }
+.fields div { padding: 10px 14px; border-right: 1px solid var(--line-2); }
+.fields div:last-child { border: 0; }
+.fields dt { font-size: 12px; color: var(--muted); }
+.fields dd { white-space: nowrap; font-size: 14px; font-weight: 600; margin-top: 3px; display: flex; align-items: center; gap: 6px; }
+.fields dd .av { width: 22px; height: 22px; font-size: 9.5px; }
+.fields dd small { font-weight: 500; color: var(--amber); font-size: 12.5px; }
+.dtabs { display: flex; gap: 20px; border-bottom: 1px solid var(--line); }
+.dtabs a { padding: 0 0 9px; font-size: 13.5px; color: var(--muted); font-weight: 500; border-bottom: 2px solid transparent; }
+.dtabs a.on { color: var(--ink); border-color: var(--ink); font-weight: 600; }
+.feed { display: flex; flex-direction: column; gap: 0; }
+.ev { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; padding: 8px 0; font-size: 13.5px; position: relative; }
+.ev::before { content: ""; position: absolute; left: 13px; top: 30px; bottom: -8px; width: 1px; background: var(--line); }
+.ev:last-child::before { display: none; }
+.ev .dot { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: #EEF1F4; color: var(--ink-2); }
+.ev .dot .ic { width: 15px; height: 15px; }
+.ev p { color: var(--ink-2); padding-top: 4px; } .ev p b { color: var(--ink); font-weight: 600; }
+.ev time { font-size: 12.5px; color: var(--muted); padding-top: 5px; font-variant-numeric: tabular-nums; }
+.ev .quote { margin-top: 6px; background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; color: var(--ink); }
+.compose { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 8px 8px 12px; background: #fff; color: var(--muted); font-size: 13.5px; margin-top: auto; }
+.compose .btn { margin-left: auto; height: 30px; font-size: 13px; }
+
+.toast { position: absolute; left: 50%; bottom: 22px; transform: translateX(-30%); background: #1E2833; color: #fff; border-radius: 8px; padding: 11px 14px; display: flex; gap: 10px; align-items: center; font-size: 13.5px; box-shadow: 0 10px 30px -10px rgba(0,0,0,.5); }
+.toast .ic { color: #5BD07F; } .toast a { color: #9EC1FF; font-weight: 600; margin-left: 10px; }
+
+/* телефон: нативный Android */
+.phone { width: 392px; height: 820px; border-radius: 44px; background: #15191E; padding: 10px; box-shadow: 0 30px 70px -25px rgba(20,30,50,.6); flex-shrink: 0; }
+.scr { height: 100%; border-radius: 35px; overflow: hidden; background: #F4F5F7; display: flex; flex-direction: column; font-family: 'Roboto', sans-serif; position: relative; }
+.sbar { height: 34px; display: flex; align-items: center; justify-content: space-between; padding: 4px 26px 0; font-size: 14px; font-weight: 500; background: #fff; }
+.sbar .r { display: flex; gap: 6px; align-items: center; } .sbar .ic { width: 15px; height: 15px; }
+.batt { width: 22px; height: 11px; border: 1.5px solid #222; border-radius: 3px; position: relative; } .batt::after { content: ""; position: absolute; inset: 1.5px 6px 1.5px 1.5px; background: #222; border-radius: 1px; }
+.appbar { background: #fff; padding: 8px 18px 0; }
+.appbar .hrow { display: flex; align-items: center; gap: 12px; }
+.appbar h1 { font: 500 24px 'Roboto'; }
+.appbar .av { margin-left: auto; width: 36px; height: 36px; font-size: 13px; }
+.appbar .shiftline { font-size: 14px; color: var(--muted); margin-top: 2px; }
+.chips { display: flex; gap: 8px; padding: 12px 0; overflow: hidden; }
+.chip { height: 36px; border-radius: 8px; border: 1px solid #C6CBD2; padding: 0 14px; display: flex; align-items: center; font-size: 15px; font-weight: 500; color: var(--ink-2); white-space: nowrap; gap: 6px; }
+.chip.on { background: var(--km-100); border-color: var(--km-100); color: var(--km); }
+.chip.on .ic { width: 16px; height: 16px; }
+.alarm { margin: 12px 12px 0; background: var(--red); color: #fff; border-radius: 14px; overflow: hidden; }
+.alarm .hz { height: 8px; background: repeating-linear-gradient(-45deg, #FFD23F 0 8px, #1A1A1A 8px 16px); }
+.alarm .in { padding: 12px 16px 14px; }
+.alarm .t { display: flex; justify-content: space-between; font-size: 14px; font-weight: 500; opacity: .95; }
+.alarm h3 { font: 700 26px 'IBM Plex Sans'; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.alarm p { font-size: 17px; margin-top: 2px; line-height: 1.35; }
+.alarm .meta { display: flex; gap: 16px; font-size: 14.5px; margin-top: 8px; opacity: .95; }
+.alarm .acts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.alarm .acts span { height: 56px; border-radius: 12px; display: grid; place-items: center; font-weight: 700; font-size: 17px; }
+.alarm .acts .a1 { background: #fff; color: var(--red); } .alarm .acts .a2 { background: rgba(0,0,0,.18); color: #fff; }
+.sect { font-size: 14px; color: var(--muted); padding: 16px 20px 8px; font-weight: 500; }
+.mcard { margin: 0 12px 10px; background: #fff; border-radius: 14px; padding: 14px 16px; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; border: 1px solid #E6E9ED; }
+.mcard .n { font-weight: 700; font-size: 16px; font-family: 'IBM Plex Sans'; font-variant-numeric: tabular-nums; }
+.mcard .n span { font-weight: 400; color: var(--muted); font-size: 14px; margin-left: 6px; }
+.mcard h4 { grid-column: 1 / -1; font-size: 17px; font-weight: 500; }
+.mcard p { grid-column: 1 / -1; font-size: 15px; color: var(--ink-2); }
+.mcard .foot { grid-column: 1 / -1; display: flex; justify-content: space-between; margin-top: 6px; font-size: 14px; color: var(--muted); }
+.mcard .pill { font-size: 13px; }
+.nav { margin-top: auto; background: #fff; border-top: 1px solid #E6E9ED; display: grid; grid-template-columns: repeat(3, 1fr); padding: 10px 0 18px; }
+.nav a { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 500; color: var(--ink-2); position: relative; }
+.nav a i, .nav a .ic { width: 22px; height: 22px; }
+.nav a .pillbg { width: 60px; height: 30px; border-radius: 15px; display: grid; place-items: center; }
+.nav a.on { color: var(--km); } .nav a.on .pillbg { background: var(--km-100); }
+.nav a em { position: absolute; top: 0; left: 52%; background: #E5484D; color: #fff; font-style: normal; font-size: 11px; font-weight: 700; border-radius: 8px; padding: 0 5px; }
+.cap { font: 500 13px 'IBM Plex Sans'; color: #4A5260; margin-top: 12px; text-align: center; }
+</style>
+<style id="color">
+body { background: linear-gradient(135deg, #9FB4D3 0%, #B9D3D8 55%, #E3D2BC 100%); }
+.rail { background: linear-gradient(180deg, #0B3F8C 0%, #0A2F6B 55%, #06204A 100%); }
+.pagehead { background: linear-gradient(115deg, #0B3F8C 0%, #1660C9 48%, #0E97A6 100%); border: 0; color: #fff; }
+.pagehead h1 { color: #fff; }
+.stat { background: rgba(255,255,255,.16); color: #DCE9FA; } .stat b { color: #fff; }
+.stat.bad { background: linear-gradient(90deg, #FF6B4A, #E5304A); color: #fff; } .stat.bad b { color: #fff; }
+.btn.primary { background: linear-gradient(180deg, #FFD54A, #F2B300); color: #1B2430; box-shadow: 0 6px 16px -6px rgba(242,179,0,.8); }
+.detail .btn.primary, .compose .btn { background: linear-gradient(90deg, #0B3F8C, #1660C9); color: #fff; box-shadow: none; }
+.tabs a { color: #BFD6F5; } .tabs a.on { color: #fff; border-color: #FFD54A; }
+.tabs a em { background: rgba(255,255,255,.18); color: #fff; } .tabs a.on em { background: #FFD54A; color: #1B2430; }
+.tabs a.alert em { background: #FF5A4A; }
+.row.sel { background: linear-gradient(90deg, #E2EDFD, #F2F8FF 70%, #fff); }
+.p-em { background: repeating-linear-gradient(-45deg, #E5304A 0 4px, #FFD54A 4px 7px); }
+.p-hi { background: linear-gradient(180deg, #FF7A45, #E5304A); }
+.s-work { background: linear-gradient(90deg, #FFE7A0, #FFF4D6); }
+.s-ok { background: linear-gradient(90deg, #C9F0D6, #E5F4EA); }
+.s-queue { background: linear-gradient(90deg, #D3E2FF, #E8EFFC); }
+.banner { background: linear-gradient(90deg, #FFE3DC, #FFF3E8); border-color: #F7B9A8; }
+.eq-pic { background: linear-gradient(135deg, #DCEBFF, #D3F1EF); }
+.eq-pic svg { stroke: #0B3F8C; }
+.fields { background: linear-gradient(180deg, #fff, #F7FAFF); }
+.ev .dot { background: linear-gradient(135deg, #E2EDFD, #D9F3F1); color: #0B3F8C; }
+.toast { background: linear-gradient(90deg, #13324F, #0E5560); }
+.appbar { background: linear-gradient(160deg, #0B3F8C 0%, #1660C9 60%, #0E97A6 100%); color: #fff; padding-bottom: 4px; }
+.sbar { background: #0B3F8C; color: #fff; } .sbar .batt { border-color: #fff; } .sbar .batt::after { background: #fff; }
+.appbar .shiftline { color: #CFE0F8; }
+.chip { border-color: rgba(255,255,255,.4); color: #fff; } .chip.on { background: #fff; color: #0B3F8C; border-color: #fff; }
+.alarm { background: linear-gradient(150deg, #FF6A3D 0%, #E5304A 55%, #B5162E 100%); box-shadow: 0 14px 30px -12px rgba(229,48,74,.7); }
+.alarm .acts .a1 { color: #C51F38; }
+.scr { background: linear-gradient(180deg, #EAF1FB, #F4F5F7 40%); }
+.nav a.on .pillbg { background: linear-gradient(90deg, #D3E2FF, #CFF0EE); }
+</style>
+</head>
+<body>
+<div class="stage">
+<div>
+<div class="win">
+  <div class="chrome"><div class="dots"><b></b><b></b><b></b></div><div class="urlbar"><i data-i="shield" class="" data-w="2"></i>naryad.local<span>/panel/orders/561</span></div></div>
+  <div class="app">
+    <nav class="rail">
+      <div class="logo"><img src="../../../frontend/public/brand/km-logo.png" alt="КМ"></div>
+      <a class="on" title="Наряды"><i data-i="orders"></i><em>3</em></a>
+      <a title="Люди"><i data-i="users"></i></a>
+      <a title="Аналитика"><i data-i="chart"></i></a>
+      <a title="Отчёты"><i data-i="report"></i></a>
+      <a class="bottom" title="Настройки"><i data-i="gear"></i></a>
+    </nav>
+    <div class="work">
+      <div class="topbar">
+        <div class="search"><i data-i="search"></i>Наряд, оборудование или фамилия<kbd>Ctrl K</kbd></div>
+        <div class="shift"><i data-i="clock"></i><b>Дневная смена</b>08:00–20:00<i data-i="down"></i></div>
+        <div class="tb-right">
+          <span class="conn">Обновляется</span>
+          <span class="iconbtn"><i data-i="bell"></i><em></em></span>
+          <div class="me"><span class="av" style="background:#5A6B7F">КА</span><div><b>Ковалёв А. В.</b><span>Мастер, участок обогащения</span></div></div>
+        </div>
+      </div>
+      <div class="pagehead">
+        <div class="ph-row">
+          <h1>Наряды смены</h1>
+          <div class="stats">
+            <span class="stat">Выдано <b>7</b></span>
+            <span class="stat">Выполнено <b>3</b></span>
+            <span class="stat bad">Просрочено <b>1</b></span>
+            <span class="stat bad">Стоит оборудования <b>2</b></span>
+          </div>
+          <span class="btn primary"><i data-i="plus"></i>Новый наряд</span>
+        </div>
+        <div class="tabs">
+          <a class="on">Активные <em>6</em></a><a class="alert">Требуют решения <em>2</em></a><a>На проверке ИИ <em>1</em></a><a>Закрытые сегодня <em>3</em></a><a>Все</a>
+        </div>
+      </div>
+      <div class="split" style="position:relative">
+        <div class="list">
+          <div class="lhead">6 нарядов<span>Сначала срочные<i data-i="down"></i></span></div>
+          <div class="row sel"><div class="prio p-em"></div><div>
+              <div class="r-top"><span class="r-num">№561</span><span class="r-inv">ОБ-007</span></div>
+              <div class="r-title">Насос гидравлический Н-7</div>
+              <div class="r-desc">Течь масла из-под торцевого уплотнения, давление падает</div>
+              <div class="r-meta"><span class="av" style="background:#2F7D6D">АЕ</span>Ахметов Е.</div>
+            </div><div class="r-side"><span class="pill s-new">Выдан</span><span class="time">до 14:20</span></div></div>
+          <div class="row"><div class="prio p-hi"></div><div>
+              <div class="r-top"><span class="r-num">№558</span><span class="r-inv">ДР-005</span></div>
+              <div class="r-title">Грохот инерционный ГИТ-71</div>
+              <div class="r-desc">Ослаб крепёж опоры, вибрация выше нормы</div>
+              <div class="r-meta"><span class="av" style="background:#7A5BA6">БА</span>Байжанов А.</div>
+            </div><div class="r-side"><span class="pill s-queue">В очереди</span><span class="time late">просрочен 45 мин</span></div></div>
+          <div class="row"><div class="prio p-hi"></div><div>
+              <div class="r-top"><span class="r-num">№556</span><span class="r-inv">КТ-002</span></div>
+              <div class="r-title">Конвейер ленточный К-2</div>
+              <div class="r-desc">Двигатель привода греется, срабатывает тепловая защита</div>
+              <div class="r-meta"><span class="av" style="background:#B0603A">АБ</span>Абенов Б.</div>
+            </div><div class="r-side"><span class="pill s-work">В работе</span><span class="time">1 ч 12 мин</span></div></div>
+          <div class="row"><div class="prio p-no"></div><div>
+              <div class="r-top"><span class="r-num">№557</span><span class="r-inv">ДР-004</span></div>
+              <div class="r-title">Питатель пластинчатый ПП-2-12</div>
+              <div class="r-desc">Трещина на раме у опоры привода, нужна подварка</div>
+              <div class="r-meta"><span class="av" style="background:#466C9E">СА</span>Сидоренко А.</div>
+            </div><div class="r-side"><span class="pill s-work">В работе</span><span class="time">35 мин</span></div></div>
+          <div class="row"><div class="prio p-no"></div><div>
+              <div class="r-top"><span class="r-num">№562</span><span class="r-inv">ОБ-003</span></div>
+              <div class="r-title">Сепаратор ПБМ-120/300</div>
+              <div class="r-desc">Замена контакторов в шкафу управления</div>
+              <div class="r-meta"><span class="av" style="background:#8C7A2E">ОЕ</span>Омаров Е.</div>
+            </div><div class="r-side"><span class="pill s-ai">Проверка ИИ</span><span class="time">12:58</span></div></div>
+          <div class="row"><div class="prio p-pl" style="border-left:2px dashed #AEB5BE"></div><div>
+              <div class="r-top"><span class="r-num">№559</span><span class="r-inv">ДР-006</span></div>
+              <div class="r-title">Маслостанция НМШ-5</div>
+              <div class="r-desc">Плановая замена фильтроэлемента</div>
+              <div class="r-meta"><span class="av" style="background:#7A5BA6">БА</span>Байжанов А.</div>
+            </div><div class="r-side"><span class="pill s-queue">В очереди</span><span class="time">до 18:55</span></div></div>
+        </div>
+        <div class="detail">
+          <div class="d-head">
+            <div><div class="crumbs">Обогащение<i data-i="right"></i>Насосная станция №2</div>
+              <h2><small>№561</small>Течь масла из-под торцевого уплотнения</h2></div>
+            <div class="d-actions"><span class="btn ghost">Сменить исполнителя</span><span class="btn ghost" style="padding:0 9px"><i data-i="more"></i></span></div>
+          </div>
+          <div class="banner"><i data-i="alert"></i><span><b>Аварийный, не принят 6 мин.</b> Через 4 мин наряд уйдёт на эскалацию. Свободен Ковальчук С., слесарь.</span><a>Переназначить</a></div>
+          <div class="card eq">
+            <div class="eq-pic"><svg viewBox="0 0 64 50" fill="none" stroke="#44505F" stroke-width="2"><circle cx="26" cy="27" r="14"/><circle cx="26" cy="27" r="5"/><path d="M40 27h14v-8h6M12 27H4v10h12M18 41l-6 6h28l-6-6"/></svg></div>
+            <div><h3>Насос гидравлический Н-7</h3>
+              <div class="sub"><span>ОБ-007</span><span>Критичность A</span><span><i data-i="pin"></i>Насосная №2, ось 4</span></div>
+              <div class="hist">За 30 дней: <b>3 внеплановых</b>, последний — Г-02 «Течь по уплотнению» 12 дней назад</div></div>
+          </div>
+          <div class="card fields">
+            <div><dt>Исполнитель</dt><dd><span class="av" style="background:#2F7D6D">АЕ</span>Ахметов Е.</dd></div>
+            <div><dt>Срок</dt><dd>14:20 <small>через 38 мин</small></dd></div>
+            <div><dt>Норматив</dt><dd>2,0 ч</dd></div>
+            <div><dt>Шифр</dt><dd>Г-02 Уплотнения</dd></div>
+          </div>
+          <div class="dtabs"><a class="on">Ход работ</a><a>Материалы</a><a>Фото</a><a>Проверка ИИ</a></div>
+          <div class="feed">
+            <div class="ev"><span class="dot" style="background:#FDEDEB;color:#C8281C"><i data-i="bell"></i></span><p>Уведомление в Telegram доставлено <b>Ахметову Е.</b>, повтор каждую минуту</p><time>13:43</time></div>
+            <div class="ev"><span class="dot"><i data-i="orders"></i></span><p><b>Ковалёв А.</b> выдал наряд, приоритет «Аварийный», оборудование остановлено</p><time>13:42</time></div>
+            <div class="ev"><span class="dot"><i data-i="msg"></i></span><div><p><b>Оператор Ким Д.</b> сообщил о неисправности</p><div class="quote">На Н-7 под насосом лужа масла, давление в линии упало до 9 бар, остановили</div></div><time>13:39</time></div>
+          </div>
+          <div class="compose"><i data-i="clip"></i>Комментарий к наряду<span class="btn primary">Отправить</span></div>
+        </div>
+        <div class="toast"><i data-i="check"></i>Абенов Б. взял наряд №556 в работу<a>Открыть</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="cap">Панель мастера, 1440 px: список и карточка наряда рядом, без переходов</div>
+</div>
+
+<div>
+<div class="phone"><div class="scr">
+  <div class="sbar"><span>14:07</span><span class="r"><i data-i="wifi"></i><span class="batt"></span></span></div>
+  <div class="appbar">
+    <div class="hrow"><h1>Мои наряды</h1><span class="av" style="background:#2F7D6D">АЕ</span></div>
+    <div class="shiftline">Ахметов Ерлан, дневная смена</div>
+    <div class="chips"><span class="chip on"><i data-i="check"></i>Активные 3</span><span class="chip">Выполненные</span><span class="chip">Рейтинг</span></div>
+  </div>
+  <div class="alarm"><div class="hz"></div><div class="in">
+    <div class="t"><span>Аварийный наряд</span><span>2 мин назад</span></div>
+    <h3>№561</h3>
+    <p>Насос гидравлический Н-7: течь масла из-под торцевого уплотнения</p>
+    <div class="meta"><span>Насосная №2</span><span>Срок 14:20</span></div>
+    <div class="acts"><span class="a1">Принять</span><span class="a2">В очередь</span></div>
+  </div></div>
+  <div class="sect">В очереди</div>
+  <div class="mcard"><span class="n">№559<span>ДР-006</span></span><span class="pill s-queue">В очереди</span>
+    <h4>Маслостанция НМШ-5</h4><p>Плановая замена фильтроэлемента</p>
+    <div class="foot"><span>Мастер Ковалёв А.</span><span>до 18:55</span></div></div>
+  <div class="mcard"><span class="n">№563<span>КТ-011</span></span><span class="pill s-queue">В очереди</span>
+    <h4>Конвейер К-3, натяжная станция</h4><p>Сход ленты влево, подтянуть ролики</p>
+    <div class="foot"><span>Мастер Ковалёв А.</span><span>до 19:30</span></div></div>
+  <div class="nav"><a class="on"><span class="pillbg"><i data-i="orders"></i></span>Наряды</a><a><span class="pillbg"><i data-i="bell"></i></span>Уведомления<em>2</em></a><a><span class="pillbg"><i data-i="user"></i></span>Профиль</a></div>
+</div></div>
+<div class="cap">Исполнитель, Android: привычные элементы системы</div>
+</div>
+</div>
+<script src="sprite.js"></script>
+</body>
+</html>

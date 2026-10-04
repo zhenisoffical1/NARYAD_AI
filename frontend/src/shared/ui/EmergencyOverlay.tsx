@@ -50,7 +50,7 @@ export function EmergencyOverlay({
       role="alertdialog"
       aria-modal="true"
       aria-labelledby="emergency-title"
-      className="fixed inset-0 z-[60] flex flex-col bg-red-strong text-white"
+      className="fixed inset-0 z-[60] flex flex-col bg-red-strong bg-grad-alarm text-white"
     >
       <div aria-hidden className="h-4 shrink-0 hatch-red" />
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 py-6">
@@ -67,8 +67,8 @@ export function EmergencyOverlay({
           {description}
         </p>
       </div>
-      <div className="flex flex-col gap-4 bg-red-strong px-4 pt-3 pb-[max(16px,env(safe-area-inset-bottom))]">
-        <Button variant="inverse" size="xl" block onClick={onAccept} loading={busy}>
+      <div className="flex flex-col gap-4 px-4 pt-3 pb-[max(16px,env(safe-area-inset-bottom))]">
+        <Button variant="inverse" size="xl" block onClick={onAccept} loading={busy} className="text-red-strong">
           {t('ui.emergencyAccept')}
         </Button>
         <button

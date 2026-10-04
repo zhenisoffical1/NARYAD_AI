@@ -21,7 +21,7 @@ export function Toaster() {
         <div
           key={item.id}
           role={item.tone === 'error' ? 'alert' : 'status'}
-          className="pointer-events-auto flex w-full max-w-md animate-sheet-in overflow-hidden rounded-control bg-steel text-on-steel shadow-overlay"
+          className="pointer-events-auto flex w-full max-w-md animate-sheet-in overflow-hidden rounded-[10px] bg-steel bg-[linear-gradient(90deg,#13324f,#0e5560)] text-on-steel shadow-overlay"
         >
           <span aria-hidden className={cn('w-1.5 shrink-0', STYLE[item.tone].bar)} />
           <span className="flex items-start gap-2 px-3 py-3">

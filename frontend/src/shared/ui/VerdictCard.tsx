@@ -60,14 +60,15 @@ export function VerdictCard({
     audience === 'worker' ? assessment.explanation_worker : assessment.explanation_master
 
   return (
-    <section className="overflow-hidden rounded-tag border border-line bg-surface">
+    <section className="overflow-hidden rounded-[12px] border border-line bg-surface shadow-card">
       <header
         className={cn(
-          'flex items-center justify-between gap-3 border-b-4 px-4 py-3',
-          verdictKey === 'accepted' && 'border-green',
-          verdictKey === 'accepted_with_remarks' && 'border-dashed border-green',
-          verdictKey === 'rework' && 'border-red',
-          verdictKey === 'review' && 'border-accent',
+          'flex items-center justify-between gap-3 border-b-2 px-4 py-3',
+          verdictKey === 'accepted' && 'border-green bg-[linear-gradient(90deg,var(--green-soft),var(--surface))]',
+          verdictKey === 'accepted_with_remarks' &&
+            'border-dashed border-green bg-[linear-gradient(90deg,var(--green-soft),var(--surface))]',
+          verdictKey === 'rework' && 'border-red bg-[linear-gradient(90deg,var(--red-soft),var(--surface))]',
+          verdictKey === 'review' && 'border-accent bg-[linear-gradient(90deg,var(--accent-soft),var(--surface))]',
         )}
       >
         <div className="flex min-w-0 flex-col gap-1">

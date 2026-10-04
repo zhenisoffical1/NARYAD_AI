@@ -37,7 +37,7 @@ export function BossPage() {
   const completion = d?.completion_hours
 
   return (
-    <div className="flex min-h-dvh flex-col bg-bg text-ink">
+    <div className="flex min-h-dvh flex-col bg-bg bg-grad-page text-ink">
       <DeskHeader title={t('boss.title')} subtitle={t('boss.period', { days })} />
 
       <main

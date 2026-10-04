@@ -114,7 +114,7 @@ export function MasterHome() {
           ))}
 
         {tab === 'people' && (
-          <div className="divide-y divide-line rounded-[8px] border border-line bg-surface px-2">
+          <div className="divide-y divide-line rounded-[12px] border border-line bg-surface px-2">
             {(people.data ?? []).map((p) => (
               <PersonStatusRow
                 key={p.employee.id}

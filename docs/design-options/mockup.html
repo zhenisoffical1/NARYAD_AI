@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>НарядAI — варианты дизайна</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300..800&family=Unbounded:wght@400..800&family=Golos+Text:wght@400..800&family=Manrope:wght@400..800&family=JetBrains+Mono:wght@400..700&family=Onest:wght@300..800&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { width: 1600px; height: 1000px; overflow: hidden; font-family: var(--font); background: var(--canvas); color: var(--ink); -webkit-font-smoothing: antialiased; }
+.stage { display: grid; grid-template-columns: 1100px 400px; gap: 36px; padding: 32px; height: 100%; }
+
+/* ---------- desktop frame ---------- */
+.desk { border-radius: var(--frame-r); overflow: hidden; background: var(--bg); box-shadow: var(--frame-shadow); display: flex; flex-direction: column; border: var(--frame-border); }
+header.top { display: flex; align-items: center; gap: 22px; padding: 0 26px; height: 74px; background: var(--bar); color: var(--bar-ink); border-bottom: var(--bar-line); flex-shrink: 0; }
+header.top img { height: 36px; }
+.sep { width: 1px; height: 30px; background: var(--bar-sep); }
+.title { line-height: 1.15; }
+.title b { font-family: var(--display); font-weight: 700; font-size: 19px; letter-spacing: var(--display-track); display: block; }
+.title span { font-size: 12.5px; opacity: .7; }
+nav.tabs { display: flex; gap: 6px; margin-left: 18px; }
+nav.tabs a { padding: 9px 14px; border-radius: var(--chip-r); font-size: 14px; font-weight: 600; color: var(--nav-ink); }
+nav.tabs a.on { background: var(--nav-on-bg); color: var(--nav-on-ink); }
+.right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+.live { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; }
+.live i { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 4px color-mix(in srgb, var(--ok) 22%, transparent); }
+.btn { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; padding: 11px 18px; border-radius: var(--btn-r); background: var(--accent); color: var(--on-accent); box-shadow: var(--btn-shadow); }
+.btn svg { width: 16px; height: 16px; }
+.avatar { width: 36px; height: 36px; border-radius: var(--avatar-r); background: var(--avatar-bg); color: var(--avatar-ink); display: grid; place-items: center; font-weight: 800; font-size: 13px; }
+
+.body { flex: 1; display: grid; grid-template-columns: 228px 1fr; min-height: 0; }
+.people { background: var(--rail); border-right: 1px solid var(--line); padding: 20px 16px; display: flex; flex-direction: column; gap: 16px; }
+.people h3 { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: var(--label-track); text-transform: var(--label-case); display: flex; justify-content: space-between; }
+.person { display: flex; gap: 10px; align-items: center; padding: 8px 10px; border-radius: var(--chip-r); background: var(--person-bg); }
+.person .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.person b { font-size: 13.5px; font-weight: 650; display: block; }
+.person span { font-size: 11.5px; color: var(--muted); }
+.main { padding: 22px 24px; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--kpi-gap); background: var(--kpi-wrap); border-radius: var(--card-r); padding: var(--kpi-pad); }
+.kpi { background: var(--kpi-bg); border-radius: var(--kpi-r); padding: 14px 18px; border: var(--kpi-border); }
+.kpi span { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: var(--label-track); text-transform: var(--label-case); }
+.kpi b { display: block; font-family: var(--numbers); font-size: 38px; font-weight: var(--num-w); line-height: 1.1; margin-top: 4px; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.kpi.danger b { color: var(--danger); }
+.kpi small { font-size: 12px; color: var(--muted); }
+
+.board { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; min-height: 0; }
+.col { display: flex; flex-direction: column; gap: 12px; background: var(--col-bg); border-radius: var(--card-r); padding: var(--col-pad); }
+.col h4 { display: flex; justify-content: space-between; align-items: center; font-size: 13.5px; font-weight: 700; padding: 2px 4px; }
+.col h4 em { font-style: normal; font-family: var(--numbers); font-size: 12px; padding: 2px 8px; border-radius: var(--chip-r); background: var(--count-bg); color: var(--count-ink); }
+
+.tag { position: relative; background: var(--surface); border-radius: var(--tag-r); padding: 14px 14px 12px 20px; box-shadow: var(--tag-shadow); border: var(--tag-border); overflow: hidden; }
+.tag::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: var(--stripe); background: var(--steel); }
+.tag.emergency::before { background: var(--hazard); }
+.tag.high::before { background: var(--danger); }
+.tag.planned::before { background: transparent; border-left: 2px dashed var(--muted); }
+.tag .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.num { font-family: var(--numbers); font-weight: var(--num-w); font-size: 22px; letter-spacing: -0.02em; }
+.inv { font-family: var(--mono); font-size: 11.5px; font-weight: 600; padding: 2px 7px; border: 1.5px solid var(--ink-2); border-radius: var(--inv-r); color: var(--ink-2); }
+.stat { white-space: nowrap; font-size: 11px; font-weight: 800; padding: 4px 9px; border-radius: var(--chip-r); letter-spacing: .03em; text-transform: var(--status-case); }
+.st-work { background: var(--work-bg); color: var(--work-ink); }
+.st-queue { background: var(--queue-bg); color: var(--queue-ink); }
+.st-new { background: var(--new-bg); color: var(--new-ink); }
+.st-ok { background: var(--ok-bg); color: var(--ok-ink); }
+.tag h5 { font-size: 14px; font-weight: 700; margin-top: 8px; }
+.tag p { font-size: 12.5px; color: var(--ink-2); margin-top: 3px; line-height: 1.35; }
+.tag footer { display: flex; gap: 8px; white-space: nowrap; justify-content: space-between; margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+.tag footer b { color: var(--ink); font-weight: 650; }
+.late { color: var(--danger) !important; font-weight: 700; }
+.ai { color: var(--accent-ink) !important; font-weight: 700; }
+
+/* ---------- phone ---------- */
+.phone { width: 400px; height: 936px; border-radius: 52px; padding: 12px; background: var(--phone-body); box-shadow: var(--frame-shadow); }
+.screen { width: 100%; height: 100%; border-radius: 42px; overflow: hidden; background: var(--bg); display: flex; flex-direction: column; position: relative; }
+.ptop { padding: 52px 22px 18px; background: var(--ptop-bg); color: var(--ptop-ink); }
+.ptop small { font-size: 12.5px; opacity: .7; }
+.ptop h2 { font-family: var(--display); font-size: 26px; font-weight: 800; letter-spacing: var(--display-track); margin-top: 2px; }
+.alarm { margin: 16px 16px 0; border-radius: var(--card-r); padding: 16px; background: var(--alarm-bg); color: var(--alarm-ink); }
+.alarm small { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; opacity: .85; }
+.alarm .big { font-family: var(--numbers); font-size: 34px; font-weight: var(--num-w); letter-spacing: -0.02em; margin-top: 2px; }
+.alarm p { font-size: 14.5px; margin-top: 4px; line-height: 1.4; }
+.alarm .meta { display: flex; gap: 14px; margin-top: 12px; font-size: 13px; font-weight: 700; }
+.pcard { margin: 14px 16px 0; background: var(--surface); border-radius: var(--card-r); padding: 16px; box-shadow: var(--tag-shadow); border: var(--tag-border); }
+.pcard dl { display: grid; grid-template-columns: auto 1fr; gap: 10px 16px; font-size: 14px; }
+.pcard dt { color: var(--muted); }
+.pcard dd { text-align: right; font-weight: 650; }
+.actions { margin-top: auto; padding: 16px 16px 30px; display: flex; flex-direction: column; gap: 10px; background: var(--action-bg); }
+.pbtn { height: 64px; border-radius: var(--pbtn-r); display: grid; place-items: center; font-size: 18px; font-weight: 800; }
+.pbtn.primary { background: var(--accent); color: var(--on-accent); box-shadow: var(--btn-shadow); }
+.pbtn.secondary { background: var(--surface); color: var(--ink); border: 2px solid var(--line-strong); }
+.caption { position: absolute; left: 32px; bottom: 6px; font: 600 13px var(--font); color: var(--muted); }
+
+/* ========== 1. СИГНАЛ — светлый индустриальный премиум ========== */
+.signal {
+  --font: 'Onest', sans-serif; --display: 'Geologica', sans-serif; --numbers: 'Geologica', sans-serif; --mono: 'JetBrains Mono', monospace;
+  --display-track: -0.02em; --num-w: 700; --label-track: 0; --label-case: none; --status-case: none;
+  --canvas: #DDE3EC; --bg: #F3F6FA; --surface: #FFFFFF; --rail: #FFFFFF; --ink: #0E1A2B; --ink-2: #3B4A60; --muted: #6A7890;
+  --line: #E3E8F0; --line-strong: #C9D2DF; --accent: #1554D1; --accent-ink: #1554D1; --on-accent: #fff;
+  --bar: #FFFFFF; --bar-ink: #0E1A2B; --bar-line: 1px solid #E3E8F0; --bar-sep: #E3E8F0;
+  --nav-ink: #4A5970; --nav-on-bg: #EAF1FF; --nav-on-ink: #1554D1;
+  --ok: #12A150; --danger: #E0382B; --steel: #26364D; --hazard: repeating-linear-gradient(-45deg, #E0382B 0 6px, #fff 6px 12px);
+  --work-bg: #FFF1C7; --work-ink: #7A5300; --queue-bg: #E3ECFF; --queue-ink: #1A4BC2; --new-bg: #FFE4E1; --new-ink: #B32317; --ok-bg: #DDF5E6; --ok-ink: #0B6B33;
+  --frame-r: 20px; --card-r: 16px; --tag-r: 12px; --chip-r: 8px; --btn-r: 10px; --inv-r: 5px; --avatar-r: 10px; --pbtn-r: 16px;
+  --frame-shadow: 0 24px 60px -20px rgba(21, 50, 100, .28); --frame-border: 0;
+  --tag-shadow: 0 1px 2px rgba(14,26,43,.06), 0 4px 14px -6px rgba(21,50,100,.12); --tag-border: 1px solid #EBEFF5;
+  --btn-shadow: 0 8px 20px -8px rgba(21,84,209,.55); --stripe: 5px;
+  --kpi-wrap: transparent; --kpi-pad: 0; --kpi-gap: 14px; --kpi-bg: #fff; --kpi-r: 14px; --kpi-border: 1px solid #EBEFF5;
+  --col-bg: #E9EEF5; --col-pad: 10px; --count-bg: #fff; --count-ink: #3B4A60; --person-bg: transparent;
+  --avatar-bg: #EAF1FF; --avatar-ink: #1554D1;
+  --phone-body: #0E1A2B; --ptop-bg: linear-gradient(160deg, #0B3F8C, #1554D1); --ptop-ink: #fff;
+  --alarm-bg: #E0382B; --alarm-ink: #fff; --action-bg: #fff;
+}
+/* ========== 2. КАРЬЕР — графит и сигнальный оранжевый ========== */
+.quarry {
+  --font: 'Golos Text', sans-serif; --display: 'Unbounded', sans-serif; --numbers: 'Unbounded', sans-serif; --mono: 'JetBrains Mono', monospace;
+  --display-track: -0.01em; --num-w: 600; --label-track: .06em; --label-case: uppercase; --status-case: uppercase;
+  --canvas: #CFCFC8; --bg: #EDEDE7; --surface: #FBFBF7; --rail: #E4E4DD; --ink: #17191B; --ink-2: #3A3E42; --muted: #6F726F;
+  --line: #D9D9D1; --line-strong: #17191B; --accent: #FF5A1F; --accent-ink: #D2430D; --on-accent: #17191B;
+  --bar: #17191B; --bar-ink: #F2F2EC; --bar-line: 4px solid #FF5A1F; --bar-sep: #3A3E42;
+  --nav-ink: #B9BBB5; --nav-on-bg: #FF5A1F; --nav-on-ink: #17191B;
+  --ok: #3FAE5A; --danger: #D72C1E; --steel: #17191B; --hazard: repeating-linear-gradient(-45deg, #FFC400 0 7px, #17191B 7px 14px);
+  --work-bg: #FFC400; --work-ink: #17191B; --queue-bg: #17191B; --queue-ink: #F2F2EC; --new-bg: #D72C1E; --new-ink: #fff; --ok-bg: #3FAE5A; --ok-ink: #0E1A10;
+  --frame-r: 6px; --card-r: 4px; --tag-r: 3px; --chip-r: 2px; --btn-r: 3px; --inv-r: 2px; --avatar-r: 2px; --pbtn-r: 4px;
+  --frame-shadow: 0 30px 60px -30px rgba(0,0,0,.45); --frame-border: 0;
+  --tag-shadow: none; --tag-border: 1.5px solid #17191B; --btn-shadow: none; --stripe: 8px;
+  --kpi-wrap: #17191B; --kpi-pad: 2px; --kpi-gap: 2px; --kpi-bg: #FBFBF7; --kpi-r: 0; --kpi-border: 0;
+  --col-bg: transparent; --col-pad: 0; --count-bg: #17191B; --count-ink: #FF5A1F; --person-bg: #FBFBF7;
+  --avatar-bg: #FF5A1F; --avatar-ink: #17191B;
+  --phone-body: #17191B; --ptop-bg: #17191B; --ptop-ink: #F2F2EC;
+  --alarm-bg: repeating-linear-gradient(-45deg, #FFC400 0 16px, #17191B 16px 32px); --alarm-ink: #17191B; --action-bg: #E4E4DD;
+}
+.quarry .alarm { padding: 0; border: 2px solid #17191B; }
+.quarry .alarm > div { margin: 10px; background: #FFC400; padding: 12px; }
+/* ========== 3. ДИСПЕТЧЕРСКАЯ — тёмный пульт ========== */
+.control {
+  --font: 'Manrope', sans-serif; --display: 'Manrope', sans-serif; --numbers: 'JetBrains Mono', monospace; --mono: 'JetBrains Mono', monospace;
+  --display-track: -0.02em; --num-w: 600; --label-track: .08em; --label-case: uppercase; --status-case: uppercase;
+  --canvas: #05080F; --bg: #0A1120; --surface: #111B2E; --rail: #0D1526; --ink: #E7EEF9; --ink-2: #A9B6CC; --muted: #6E7E99;
+  --line: #1D2A42; --line-strong: #2C3D5E; --accent: #3D8BFF; --accent-ink: #6FA8FF; --on-accent: #fff;
+  --bar: #0D1526; --bar-ink: #E7EEF9; --bar-line: 1px solid #1D2A42; --bar-sep: #1D2A42;
+  --nav-ink: #8495B2; --nav-on-bg: #16243D; --nav-on-ink: #E7EEF9;
+  --ok: #2FD27C; --danger: #FF4D5E; --steel: #50607D; --hazard: repeating-linear-gradient(-45deg, #FF4D5E 0 6px, #0A1120 6px 12px);
+  --work-bg: rgba(255, 196, 61, .14); --work-ink: #FFC43D; --queue-bg: rgba(61, 139, 255, .16); --queue-ink: #7DB0FF; --new-bg: rgba(255, 77, 94, .16); --new-ink: #FF7884; --ok-bg: rgba(47, 210, 124, .14); --ok-ink: #45E08F;
+  --frame-r: 18px; --card-r: 14px; --tag-r: 10px; --chip-r: 6px; --btn-r: 10px; --inv-r: 4px; --avatar-r: 50%; --pbtn-r: 14px;
+  --frame-shadow: 0 0 0 1px #1D2A42, 0 30px 80px -20px rgba(0, 40, 120, .5); --frame-border: 0;
+  --tag-shadow: inset 0 1px 0 rgba(255,255,255,.04); --tag-border: 1px solid #1D2A42; --btn-shadow: 0 0 24px -4px rgba(61,139,255,.7); --stripe: 3px;
+  --kpi-wrap: transparent; --kpi-pad: 0; --kpi-gap: 12px; --kpi-bg: #111B2E; --kpi-r: 12px; --kpi-border: 1px solid #1D2A42;
+  --col-bg: #0D1526; --col-pad: 10px; --count-bg: #16243D; --count-ink: #A9B6CC; --person-bg: transparent;
+  --avatar-bg: #16243D; --avatar-ink: #6FA8FF;
+  --phone-body: #1A2336; --ptop-bg: #0A1120; --ptop-ink: #E7EEF9;
+  --alarm-bg: linear-gradient(135deg, #3A0D16, #5C1220); --alarm-ink: #FFE5E8; --action-bg: #0D1526;
+}
+.control .alarm { border: 1px solid #FF4D5E; box-shadow: 0 0 30px -6px rgba(255,77,94,.55); }
+/* ========== 4. ВОЗДУХ — мягкий современный (Apple-подобный) ========== */
+.soft {
+  --font: 'Onest', sans-serif; --display: 'Onest', sans-serif; --numbers: 'Onest', sans-serif; --mono: 'JetBrains Mono', monospace;
+  --display-track: -0.03em; --num-w: 700; --label-track: 0; --label-case: none; --status-case: none;
+  --canvas: radial-gradient(1200px 600px at 20% -10%, #CFE0FF 0%, transparent 60%), radial-gradient(900px 500px at 100% 100%, #D9F2EC 0%, transparent 55%), #EEF2F8;
+  --bg: rgba(248, 250, 253, .9); --surface: #FFFFFF; --rail: transparent; --ink: #101828; --ink-2: #475467; --muted: #7A8699;
+  --line: #EEF1F6; --line-strong: #DCE3EE; --accent: #0B3F8C; --accent-ink: #1D5FD6; --on-accent: #fff;
+  --bar: transparent; --bar-ink: #101828; --bar-line: 0; --bar-sep: #DCE3EE;
+  --nav-ink: #5D6B80; --nav-on-bg: #0B3F8C; --nav-on-ink: #fff;
+  --ok: #17B26A; --danger: #F04438; --steel: #344054; --hazard: repeating-linear-gradient(-45deg, #F04438 0 6px, #FFE4E2 6px 12px);
+  --work-bg: #FEF0C7; --work-ink: #93370D; --queue-bg: #E0EAFF; --queue-ink: #2D4BB8; --new-bg: #FEE4E2; --new-ink: #B42318; --ok-bg: #DCFAE6; --ok-ink: #067647;
+  --frame-r: 28px; --card-r: 22px; --tag-r: 18px; --chip-r: 999px; --btn-r: 999px; --inv-r: 8px; --avatar-r: 14px; --pbtn-r: 22px;
+  --frame-shadow: 0 1px 0 rgba(255,255,255,.8) inset, 0 40px 80px -30px rgba(16, 40, 90, .25); --frame-border: 1px solid rgba(255,255,255,.7);
+  --tag-shadow: 0 2px 4px rgba(16,24,40,.03), 0 12px 24px -12px rgba(16,40,90,.14); --tag-border: 0; --btn-shadow: 0 10px 24px -10px rgba(11,63,140,.6); --stripe: 4px;
+  --kpi-wrap: rgba(255,255,255,.55); --kpi-pad: 6px; --kpi-gap: 6px; --kpi-bg: #fff; --kpi-r: 16px; --kpi-border: 0;
+  --col-bg: rgba(255,255,255,.5); --col-pad: 10px; --count-bg: #EEF1F6; --count-ink: #475467; --person-bg: rgba(255,255,255,.7);
+  --avatar-bg: #E0EAFF; --avatar-ink: #0B3F8C;
+  --phone-body: #F7F9FC; --ptop-bg: transparent; --ptop-ink: #101828;
+  --alarm-bg: linear-gradient(150deg, #F04438, #C7281D); --alarm-ink: #fff; --action-bg: rgba(255,255,255,.85);
+}
+.soft header.top { margin: 14px 14px 0; height: 64px; border-radius: 20px; background: rgba(255,255,255,.75); box-shadow: 0 8px 24px -14px rgba(16,40,90,.25); backdrop-filter: blur(10px); }
+.soft .people { border-right: 0; }
+.soft .phone { box-shadow: 0 0 0 1px #DCE3EE, 0 40px 80px -30px rgba(16,40,90,.35); }
+</style>
+</head>
+<body>
+<script>document.body.className = new URLSearchParams(location.search).get('t') || location.hash.slice(1) || 'signal'</script>
+<div class="stage">
+  <section class="desk">
+    <header class="top">
+      <img id="logo" alt="АО «Костанайские Минералы»">
+      <span class="sep"></span>
+      <div class="title"><b>Панель смены</b><span>Дневная смена · 08:00–20:00</span></div>
+      <nav class="tabs"><a class="on">Смена</a><a>Аналитика</a><a>Отчёты</a><a>Рейтинг</a></nav>
+      <div class="right">
+        <span class="live"><i></i>На связи</span>
+        <span class="btn"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 3v10M3 8h10"/></svg>Новый наряд</span>
+        <span class="avatar">КА</span>
+      </div>
+    </header>
+    <div class="body">
+      <aside class="people">
+        <div><h3>Свободны <span>2</span></h3></div>
+        <div class="person"><span class="dot" style="background:var(--ok)"></span><div><b>Ахметов Ерлан</b><span>слесарь-ремонтник</span></div></div>
+        <div class="person"><span class="dot" style="background:var(--ok)"></span><div><b>Ковальчук Сергей</b><span>слесарь-ремонтник</span></div></div>
+        <div><h3>В работе <span>2</span></h3></div>
+        <div class="person"><span class="dot" style="background:#F5B800"></span><div><b>Абенов Бауыржан</b><span>электромонтёр · №556</span></div></div>
+        <div class="person"><span class="dot" style="background:#F5B800"></span><div><b>Сидоренко Алексей</b><span>сварщик · №557</span></div></div>
+        <div><h3>С очередью <span>1</span></h3></div>
+        <div class="person"><span class="dot" style="background:var(--accent)"></span><div><b>Байжанов Арман</b><span>слесарь · очередь 2</span></div></div>
+        <div><h3>Не на смене <span>1</span></h3></div>
+        <div class="person" style="opacity:.6"><span class="dot" style="background:var(--muted)"></span><div><b>Нурпеисов Асхат</b><span>электромонтёр</span></div></div>
+      </aside>
+      <main class="main">
+        <div class="kpis">
+          <div class="kpi"><span>Выдано</span><b>7</b><small>за смену</small></div>
+          <div class="kpi"><span>Выполнено</span><b>3</b><small>2 ждут подтверждения</small></div>
+          <div class="kpi danger"><span>Просрочено</span><b>1</b><small>№558 · 45 мин</small></div>
+          <div class="kpi danger"><span>В простое</span><b>2</b><small>Конвейер К-2, Н-7</small></div>
+        </div>
+        <div class="board">
+          <div class="col"><h4>Выданные <em>1</em></h4>
+            <article class="tag emergency"><div class="row"><span class="num">№561</span><span class="stat st-new">Аварийный</span></div>
+              <div class="row" style="margin-top:6px"><span class="inv">ОБ-007</span></div>
+              <h5>Насос гидравлический Н-7</h5><p>Течь масла из-под торцевого уплотнения</p>
+              <footer><b>Ахметов Е.</b><span>до 14:20</span></footer></article>
+          </div>
+          <div class="col"><h4>В работе <em>2</em></h4>
+            <article class="tag high"><div class="row"><span class="num">№556</span><span class="stat st-work">В работе</span></div>
+              <div class="row" style="margin-top:6px"><span class="inv">КТ-002</span></div>
+              <h5>Конвейер К-2</h5><p>Двигатель привода греется, срабатывает защита</p>
+              <footer><b>Абенов Б.</b><span>2:30</span></footer></article>
+            <article class="tag"><div class="row"><span class="num">№557</span><span class="stat st-work">В работе</span></div>
+              <div class="row" style="margin-top:6px"><span class="inv">ДР-004</span></div>
+              <h5>Питатель ПП-2-12</h5><p>Трещина на раме у опоры привода</p>
+              <footer><b>Сидоренко А.</b><span>3:20</span></footer></article>
+          </div>
+          <div class="col"><h4>В очереди <em>2</em></h4>
+            <article class="tag"><div class="row"><span class="num">№558</span><span class="stat st-queue">В очереди</span></div>
+              <div class="row" style="margin-top:6px"><span class="inv">ДР-005</span></div>
+              <h5>Грохот ГИТ-71</h5><p>Ослаб крепёж опоры, вибрация</p>
+              <footer><b>Байжанов А.</b><span class="late">−45 мин</span></footer></article>
+            <article class="tag planned"><div class="row"><span class="num">№559</span><span class="stat st-queue">В очереди</span></div>
+              <div class="row" style="margin-top:6px"><span class="inv">ДР-006</span></div>
+              <h5>Маслостанция НМШ-5</h5><p>Плановая замена фильтроэлемента</p>
+              <footer><b>Байжанов А.</b><span>до 18:55</span></footer></article>
+          </div>
+          <div class="col"><h4>Выполненные <em>3</em></h4>
+            <article class="tag planned"><div class="row"><span class="num">№562</span><span class="stat st-ok">Проверен</span></div>
+              <div class="row" style="margin-top:6px"><span class="inv">ОБ-003</span></div>
+              <h5>Сепаратор ПБМ-120/300</h5><p>Замена контакторов в шкафу управления</p>
+              <footer><b>Омаров Е.</b><span class="ai">88 из 100</span></footer></article>
+          </div>
+        </div>
+      </main>
+    </div>
+  </section>
+
+  <section class="phone"><div class="screen">
+    <div class="ptop"><small>Ахметов Е. · дневная смена</small><h2>Мои наряды</h2></div>
+    <div class="alarm"><div>
+      <small>Аварийный наряд</small>
+      <div class="big">№561</div>
+      <p>Насос гидравлический Н-7 — течь масла из-под торцевого уплотнения</p>
+      <div class="meta"><span>Обогащение</span><span>Срок 14:20</span></div>
+    </div></div>
+    <div class="pcard"><dl>
+      <dt>Мастер</dt><dd>Ковалёв А.</dd>
+      <dt>Оборудование</dt><dd>ОБ-007</dd>
+      <dt>Простой</dt><dd style="color:var(--danger)">оборудование стоит</dd>
+    </dl></div>
+    <div class="actions">
+      <div class="pbtn primary">Принять в работу</div>
+      <div class="pbtn secondary">Поставить в очередь</div>
+    </div>
+  </div></section>
+</div>
+<script>
+  const dark = ['quarry', 'control'].includes(document.body.className)
+  document.getElementById('logo').src = dark ? '../../frontend/public/brand/km-logo-white.png' : '../../frontend/public/brand/km-logo.png'
+</script>
+</body>
+</html>

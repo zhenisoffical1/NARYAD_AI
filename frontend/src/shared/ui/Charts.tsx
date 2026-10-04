@@ -141,9 +141,9 @@ export function BarList({
             {row.hint && <span className="text-ink-3"> · {row.hint}</span>}
           </span>
           <span className="cond text-body font-semibold tabular">{format(row.value)}</span>
-          <span aria-hidden className="col-span-2 h-2 overflow-hidden rounded-[3px] bg-plate">
+          <span aria-hidden className="col-span-2 h-2 overflow-hidden rounded-full bg-plate">
             <span
-              className={cn('block h-full rounded-[3px]', row.accent ? 'bg-chart-accent' : 'bg-chart-muted')}
+              className={cn('block h-full rounded-full', row.accent ? 'bg-chart-accent' : 'bg-chart-muted')}
               style={{ width: `${Math.max(2, (row.value / top) * 100)}%` }}
             />
           </span>

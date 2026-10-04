@@ -22,7 +22,7 @@ function ComponentMeter({ c }: { c: RatingComponent }) {
       <span className="cond text-small tabular">
         {num(c.points)} <span className="text-ink-3">/ {num(max)}</span>
       </span>
-      <span aria-hidden className="h-1.5 overflow-hidden rounded-[2px] bg-plate">
+      <span aria-hidden className="h-1.5 overflow-hidden rounded-full bg-plate">
         <span className="block h-full bg-chart-accent" style={{ width: `${(c.points / max) * 100}%` }} />
       </span>
     </div>
@@ -44,7 +44,7 @@ export function RatingDeskPage() {
   const columns = workers[0]?.components ?? []
 
   return (
-    <div className="flex min-h-dvh flex-col bg-bg text-ink">
+    <div className="flex min-h-dvh flex-col bg-bg bg-grad-page text-ink">
       <DeskHeader title={t('ratingDesk.title')} subtitle={t('boss.period', { days })} />
       <main
         className={cn(

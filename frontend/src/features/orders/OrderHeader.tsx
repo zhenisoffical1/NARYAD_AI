@@ -6,17 +6,17 @@ import { Icon, InvPlate, StatusBadge } from '@/shared/ui'
 
 const STRIPE = {
   emergency: 'hatch-red',
-  high: 'bg-red',
-  normal: 'bg-ink',
-  planned: 'border-b-2 border-dashed border-ink-3 bg-surface',
+  high: 'bg-red bg-[linear-gradient(90deg,#ff7a45,#e5304a)]',
+  normal: 'bg-accent bg-grad-bar',
+  planned: 'border-b-2 border-dashed border-ink-3/60 bg-surface',
 } as const
 
 /** Шапка карточки наряда: та же бирка, что в списке, но крупнее и со всеми реквизитами. */
 export function OrderHeader({ order }: { order: OrderDetail }) {
   const { t } = useTranslation()
   return (
-    <section className="overflow-hidden rounded-[8px] border border-line bg-surface">
-      <div aria-hidden className={cn('h-2.5', STRIPE[order.priority])} />
+    <section className="overflow-hidden rounded-[12px] border border-line bg-surface shadow-card">
+      <div aria-hidden className={cn('h-2', STRIPE[order.priority])} />
       <div className="flex flex-col gap-3 p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap items-center gap-2">
@@ -28,10 +28,10 @@ export function OrderHeader({ order }: { order: OrderDetail }) {
         <div className="flex flex-wrap items-center gap-2 text-small">
           <span
             className={cn(
-              'stamp inline-flex h-6 items-center rounded-tag px-1.5',
-              order.priority === 'emergency' && 'bg-red-strong text-white',
-              order.priority === 'high' && 'border-2 border-red text-red',
-              (order.priority === 'normal' || order.priority === 'planned') && 'border-2 border-line text-ink-2',
+              'stamp inline-flex h-6 items-center rounded-[6px] px-2',
+              order.priority === 'emergency' && 'bg-red-strong bg-grad-alarm text-white',
+              order.priority === 'high' && 'bg-red-soft text-red',
+              (order.priority === 'normal' || order.priority === 'planned') && 'bg-plate text-ink-2',
             )}
           >
             {t(`priority.${order.priority}`)}

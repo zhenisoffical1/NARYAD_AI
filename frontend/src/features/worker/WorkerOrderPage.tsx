@@ -74,7 +74,7 @@ function OrderBody({ order }: { order: OrderDetail }) {
         <OrderHeader order={order} />
 
         {order.status === 'REWORK' && (
-          <section className="rounded-[8px] border-2 border-red bg-red-soft p-4">
+          <section className="rounded-[12px] border-2 border-red bg-red-soft p-4">
             <p className="text-h2 font-semibold text-red">{t('worker.reworkTitle')}</p>
             <p className="mt-1 [overflow-wrap:anywhere]">{reworkReason ?? t('worker.reworkHint')}</p>
           </section>

@@ -13,7 +13,7 @@ import { cn } from '@/shared/lib/format'
 
 import { Icon, type IconName } from './Icon'
 
-type Variant = 'primary' | 'secondary' | 'quiet' | 'danger' | 'inverse'
+type Variant = 'primary' | 'cta' | 'secondary' | 'quiet' | 'danger' | 'inverse'
 type Size = 'xl' | 'lg' | 'md' | 'sm'
 
 const HOLD_MS = 800
@@ -26,11 +26,13 @@ const SIZE: Record<Size, string> = {
 }
 
 const VARIANT: Record<Variant, string> = {
-  primary: 'bg-accent text-on-accent hover:bg-accent-press active:bg-accent-press',
-  secondary: 'bg-surface text-ink border-2 border-ink/80 hover:bg-plate/60 active:bg-plate',
-  quiet: 'bg-transparent text-ink hover:bg-plate/60 active:bg-plate',
-  danger: 'bg-surface text-red border-2 border-red hover:bg-red-soft/60',
-  inverse: 'bg-on-steel text-steel hover:opacity-90 active:opacity-90',
+  primary:
+    'bg-accent bg-grad-primary text-on-accent shadow-[0_8px_18px_-10px_rgb(11_63_140/0.9)] hover:brightness-110 active:brightness-95',
+  cta: 'bg-yellow bg-grad-cta text-steel shadow-[0_8px_18px_-10px_rgb(242_179_0/0.95)] hover:brightness-105 active:brightness-95',
+  secondary: 'bg-surface text-ink border-2 border-ink-3/45 hover:bg-plate/70 active:bg-plate',
+  quiet: 'bg-transparent text-ink hover:bg-plate/70 active:bg-plate',
+  danger: 'bg-surface text-red border-2 border-red/80 hover:bg-red-soft/60',
+  inverse: 'bg-white text-steel hover:opacity-90 active:opacity-90',
 }
 
 interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
@@ -68,7 +70,7 @@ export function Button({
       aria-busy={loading || undefined}
       className={cn(
         'relative inline-flex select-none items-center justify-center overflow-hidden rounded-control',
-        'transition-colors duration-100 disabled:cursor-not-allowed disabled:opacity-45',
+        'transition-[filter,background-color] duration-100 disabled:cursor-not-allowed disabled:opacity-45 disabled:shadow-none',
         'touch-manipulation',
         SIZE[size],
         VARIANT[variant],

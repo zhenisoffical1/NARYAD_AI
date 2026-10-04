@@ -38,7 +38,7 @@ export function ProfilePage({ onBack }: { onBack?: () => void }) {
     <div className="flex flex-1 flex-col">
       <TopBar title={t('profile.title')} onBack={onBack} />
       <main className="mx-auto flex w-full max-w-xl flex-col gap-4 px-4 py-4">
-        <section className="flex items-center gap-4 rounded-[8px] border border-line bg-surface p-4">
+        <section className="flex items-center gap-4 rounded-[12px] border border-line bg-surface p-4">
           <span
             aria-hidden
             className="cond inline-flex size-14 shrink-0 items-center justify-center rounded-[6px] bg-bar text-h2 font-semibold text-on-bar"

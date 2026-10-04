@@ -105,7 +105,7 @@ function ScorePlate({ order }: { order: OrderDetail }) {
   return (
     <section
       className={cn(
-        'flex items-center justify-between gap-4 rounded-[8px] border-2 bg-surface px-5 py-4',
+        'flex items-center justify-between gap-4 rounded-[12px] border-2 bg-surface px-5 py-4',
         verdict === 'rework' ? 'border-red' : verdict === 'review' ? 'border-accent' : 'border-green',
       )}
     >

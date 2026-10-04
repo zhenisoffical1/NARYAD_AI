@@ -43,7 +43,7 @@ export function EquipmentPicker({
 
   if (value) {
     return (
-      <div className="flex items-start justify-between gap-3 rounded-[8px] border-2 border-accent bg-surface p-3">
+      <div className="flex items-start justify-between gap-3 rounded-[12px] border-2 border-accent bg-surface p-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <InvPlate inv={value.inv_number} />

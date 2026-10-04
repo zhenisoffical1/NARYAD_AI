@@ -229,7 +229,7 @@ export function IssueOrderForm({ onIssued }: { onIssued: (order: OrderDetail) =>
           {!equipment && <p className="text-small text-ink-3">{t('issue.pickEquipmentFirst')}</p>}
           {equipment && assist.isPending && <p className="text-small text-ink-3">{t('issue.candidatesLoading')}</p>}
           {brigadeId === null && candidates.length > 0 && (
-            <div className="divide-y divide-line rounded-[8px] border border-line bg-surface px-1">
+            <div className="divide-y divide-line rounded-[12px] border border-line bg-surface px-1">
               {visible.map((c) => (
                 <PersonStatusRow
                   key={c.person.employee.id}

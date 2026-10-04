@@ -17,8 +17,8 @@ export function ShiftCounters({
   const value = (n: number | undefined) => (n === undefined ? '—' : n)
   return (
     <CounterBoard columns={layout === 'grid' ? 2 : undefined}>
-      <Counter label={t('master.issued')} value={value(summary?.issued)} />
-      <Counter label={t('master.done')} value={value(summary?.done)} />
+      <Counter tone="blue" label={t('master.issued')} value={value(summary?.issued)} />
+      <Counter tone="green" label={t('master.done')} value={value(summary?.done)} />
       <Counter
         label={t('master.overdue')}
         value={value(summary?.overdue)}
@@ -26,6 +26,7 @@ export function ShiftCounters({
         onClick={onOverdue}
       />
       <Counter
+        tone="amber"
         label={t('master.downtime')}
         value={value(summary?.equipment_down)}
         alert={Boolean(summary?.equipment_down)}

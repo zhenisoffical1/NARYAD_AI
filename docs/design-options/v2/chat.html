@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Вариант В — Мессенджер</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Condensed:wght@500;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink: #1A2128; --ink-2: #4A5561; --muted: #7D8892; --line: #E4E8EB; --km: #0B3F8C; --km-2: #2A6BD1; --km-50: #E6EFFB;
+  --chat: #D9E2E8; --out: #DCEBFF; --in: #fff; --red: #D0302A; --amber: #8A5A00; --amber-bg: #FFF1C9; --green: #1F7A3C; --green-bg: #E2F3E7; --blue-bg: #E3ECFC;
+}
+body { width: 1600px; height: 1000px; overflow: hidden; background: #B7C2CA; font-family: 'Roboto', sans-serif; color: var(--ink); font-size: 14.5px; -webkit-font-smoothing: antialiased; }
+.stage { display: flex; gap: 40px; padding: 30px 32px; align-items: flex-start; }
+.ic { width: 20px; height: 20px; flex-shrink: 0; }
+.cond { font-family: 'Roboto Condensed', sans-serif; font-variant-numeric: tabular-nums; }
+.win { width: 1110px; height: 940px; background: #fff; border-radius: 10px; overflow: hidden; display: grid; grid-template-columns: 340px 1fr 270px; box-shadow: 0 30px 70px -25px rgba(20,35,50,.5), 0 0 0 1px rgba(0,0,0,.12); }
+
+/* список */
+.side { border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+.sh { display: flex; align-items: center; gap: 10px; padding: 12px 14px 8px; }
+.sh img { height: 30px; }
+.sh .srch { flex: 1; height: 36px; border-radius: 18px; background: #F1F3F5; display: flex; align-items: center; gap: 8px; padding: 0 12px; color: var(--muted); font-size: 14px; }
+.sh .srch .ic { width: 17px; height: 17px; }
+.folders { display: flex; gap: 14px; padding: 0 14px; font-size: 13.5px !important; border-bottom: 1px solid var(--line); font-size: 14px; font-weight: 500; color: var(--muted); }
+.folders a { padding: 9px 0 10px; border-bottom: 2px solid transparent; display: flex; gap: 5px; align-items: center; }
+.folders a.on { color: var(--km); border-color: var(--km); }
+.folders em { font-style: normal; font-size: 11.5px; background: var(--red); color: #fff; border-radius: 9px; padding: 0 6px; font-weight: 700; }
+.folders a.on em { background: var(--km); }
+.chats { overflow: hidden; }
+.c { display: grid; grid-template-columns: 50px 1fr auto; gap: 0 11px; padding: 9px 12px; align-items: center; }
+.c.sel { background: var(--km); color: #fff; }
+.c.sel .pv, .c.sel time, .c.sel .who { color: #CFE0F8 !important; }
+.ava { width: 50px; height: 50px; border-radius: 12px; display: grid; place-items: center; color: #fff; font: 700 13px 'Roboto Condensed'; letter-spacing: .02em; position: relative; text-align: center; line-height: 1.05; }
+.ava i { position: absolute; right: -3px; bottom: -3px; width: 15px; height: 15px; border-radius: 50%; border: 2.5px solid #fff; }
+.c.sel .ava i { border-color: var(--km); }
+.hz { background: repeating-linear-gradient(-45deg, #D0302A 0 6px, #F0A39F 6px 12px); text-shadow: 0 0 3px #8E1C13, 0 0 2px #8E1C13; }
+.c b { font-weight: 500; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.c .pv { font-size: 14px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; margin-top: 2px; }
+.c .who { color: var(--km-2); }
+.c > div:nth-child(2) { min-width: 0; }
+.c .r { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; align-self: start; padding-top: 4px; }
+.c time { font-size: 12.5px; color: var(--muted); }
+.c .badge { min-width: 22px; height: 22px; border-radius: 11px; background: #9AA6B0; color: #fff; font-size: 12.5px; font-weight: 700; display: grid; place-items: center; padding: 0 6px; }
+.c .badge.red { background: var(--red); }
+.c.sel .badge { background: #fff; color: var(--km); }
+.late { color: var(--red) !important; font-weight: 500; }
+
+/* переписка */
+.conv { display: flex; flex-direction: column; min-height: 0; background: var(--chat); }
+.ch { height: 60px; background: #fff; display: flex; align-items: center; gap: 12px; padding: 0 16px; border-bottom: 1px solid var(--line); flex-shrink: 0; }
+.ch b { font-size: 16px; font-weight: 500; display: block; } .ch span { font-size: 13.5px; color: var(--muted); }
+.ch .acts { margin-left: auto; display: flex; gap: 6px; color: var(--ink-2); }
+.ch .acts span { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; }
+.ch .stpill { font-size: 13px; font-weight: 500; padding: 5px 10px; border-radius: 14px; background: var(--amber-bg); color: var(--amber); margin-left: 4px; }
+.pin { background: #fff; border-bottom: 1px solid var(--line); display: flex; gap: 10px; align-items: center; padding: 7px 16px; font-size: 13.5px; flex-shrink: 0; }
+.pin::before { content: ""; width: 2px; height: 32px; background: var(--km); border-radius: 1px; }
+.pin b { color: var(--km); font-weight: 500; display: block; font-size: 13px; }
+.pin .tm { margin-left: auto; text-align: right; }
+.pin .tm b { font: 700 18px 'Roboto Condensed'; color: var(--ink); }
+.msgs { flex: 1; padding: 12px 18px; display: flex; flex-direction: column; gap: 6px; overflow: hidden; justify-content: flex-end; }
+.day { align-self: center; background: rgba(40,60,75,.38); color: #fff; font-size: 13px; font-weight: 500; padding: 3px 10px; border-radius: 12px; margin: 4px 0; }
+.sys { align-self: center; background: rgba(40,60,75,.22); color: #24323D; font-size: 13px; padding: 3px 10px; border-radius: 12px; }
+.m { max-width: 74%; background: var(--in); border-radius: 12px 12px 12px 4px; padding: 7px 10px 6px; font-size: 14.5px; line-height: 1.38; box-shadow: 0 1px 1px rgba(30,50,60,.12); position: relative; }
+.m.out { align-self: flex-end; background: var(--out); border-radius: 12px 12px 4px 12px; }
+.m .au { font-size: 13.5px; font-weight: 500; color: #B4562C; margin-bottom: 1px; }
+.m .au.k { color: var(--km-2); }
+.m time { float: right; font-size: 12px; color: var(--muted); margin: 6px 0 -4px 10px; display: flex; gap: 2px; align-items: center; }
+.m time .ic { width: 15px; height: 15px; color: var(--km-2); }
+.ordercard { width: 380px; padding: 0; overflow: hidden; }
+.ordercard .head { padding: 9px 12px; display: flex; align-items: baseline; gap: 10px; border-bottom: 1px solid #C9DAF2; }
+.ordercard .head b { font: 700 20px 'Roboto Condensed'; }
+.ordercard .head span { font: 500 13px 'Roboto Condensed'; border: 1.5px solid var(--ink-2); padding: 0 5px; border-radius: 3px; color: var(--ink-2); }
+.ordercard .head em { margin-left: auto; font-style: normal; font-size: 12.5px; font-weight: 500; background: #FFE1DE; color: var(--red); padding: 2px 8px; border-radius: 10px; }
+.ordercard .body { padding: 8px 12px 6px; }
+.ordercard dl { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-size: 13.5px; margin-top: 6px; }
+.ordercard dt { color: var(--muted); }
+.voice { display: flex; align-items: center; gap: 10px; min-width: 260px; }
+.voice .pl { width: 38px; height: 38px; border-radius: 50%; background: var(--km-2); color: #fff; display: grid; place-items: center; flex-shrink: 0; }
+.voice .pl .ic { width: 16px; height: 16px; margin-left: 2px; }
+.wave { display: flex; align-items: center; gap: 2px; height: 26px; }
+.wave i { width: 3px; border-radius: 2px; background: #9CB6DB; }
+.wave i.p { background: var(--km-2); }
+.voice small { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+.trans { font-size: 13.5px; color: var(--ink-2); border-left: 2px solid #9CB6DB; padding-left: 8px; margin-top: 6px; font-style: italic; }
+.ai { background: #fff; border: 1.5px solid #B9CCE8; }
+.ai .au { color: var(--km); display: flex; gap: 6px; align-items: center; }
+.ai .au .ic { width: 16px; height: 16px; }
+.ai ul { list-style: none; margin-top: 4px; font-size: 14px; }
+.ai li { display: flex; gap: 7px; padding: 2px 0; }
+.ai li .ic { width: 17px; height: 17px; margin-top: 1px; }
+.ai li.ok .ic { color: var(--green); } .ai li.warn .ic { color: #C57A00; }
+.ai .score { display: flex; align-items: baseline; gap: 8px; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--line); font-size: 13.5px; color: var(--ink-2); }
+.ai .score b { font: 700 22px 'Roboto Condensed'; color: var(--ink); }
+.input { background: #fff; display: flex; align-items: center; gap: 12px; padding: 10px 14px; color: var(--muted); font-size: 15px; flex-shrink: 0; }
+.input .send { margin-left: auto; color: var(--km-2); }
+
+/* справа */
+.info { border-left: 1px solid var(--line); padding: 16px; display: flex; flex-direction: column; gap: 16px; overflow: hidden; }
+.info h4 { font-size: 13px; color: var(--muted); font-weight: 400; margin-bottom: 6px; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 7px 10px; font-size: 14px; }
+.kv dt { color: var(--muted); } .kv dd { text-align: right; font-weight: 500; }
+.ppl .p { display: flex; gap: 10px; align-items: center; padding: 6px 0; font-size: 14px; }
+.ppl .p .a { width: 34px; height: 34px; border-radius: 50%; color: #fff; display: grid; place-items: center; font-size: 12.5px; font-weight: 700; position: relative; }
+.ppl .p .a i { position: absolute; right: -2px; bottom: -2px; width: 11px; height: 11px; border-radius: 50%; border: 2px solid #fff; }
+.ppl .p small { display: block; color: var(--muted); font-size: 12.5px; }
+.ppl .p em { margin-left: auto; font-style: normal; font-size: 12.5px; color: var(--ink-2); }
+.mats { font-size: 14px; }
+.mats div { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--line); }
+.mats span { color: var(--muted); }
+.side-cnt { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.side-cnt div { background: #F3F5F7; border-radius: 8px; padding: 8px 10px; }
+.side-cnt b { font: 700 24px 'Roboto Condensed'; display: block; }
+.side-cnt span { font-size: 12.5px; color: var(--ink-2); }
+.side-cnt .bad b { color: var(--red); }
+
+/* телефон */
+.phone { width: 392px; height: 820px; border-radius: 44px; background: #161B20; padding: 10px; box-shadow: 0 30px 70px -25px rgba(20,35,50,.6); flex-shrink: 0; }
+.scr { height: 100%; border-radius: 35px; overflow: hidden; background: var(--chat); display: flex; flex-direction: column; }
+.sbar { height: 34px; display: flex; align-items: center; justify-content: space-between; padding: 4px 26px 0; font-size: 14px; font-weight: 500; background: #fff; }
+.pch { background: #fff; display: flex; align-items: center; gap: 12px; padding: 6px 12px 10px; border-bottom: 1px solid var(--line); }
+.pch .ic { width: 24px; height: 24px; color: var(--ink-2); }
+.pch .ava { width: 42px; height: 42px; border-radius: 10px; font-size: 12px; }
+.pch b { font-size: 17px; font-weight: 500; display: block; } .pch span { font-size: 14px; color: var(--amber); }
+.pmsgs { flex: 1; padding: 10px 10px; display: flex; flex-direction: column; gap: 6px; justify-content: flex-end; overflow: hidden; }
+.pmsgs .m { font-size: 16px; max-width: 86%; }
+.pmsgs .voice { min-width: 0; }
+.dock { background: #fff; padding: 10px 10px 18px; display: grid; gap: 10px; }
+.dock .two { display: grid; grid-template-columns: 1fr 1.5fr; gap: 16px; }
+.dock .b { height: 60px; border-radius: 14px; display: grid; place-items: center; font-size: 17px; font-weight: 700; }
+.dock .b.sec { background: #EEF1F4; color: var(--ink); }
+.dock .b.pri { background: var(--km); color: #fff; }
+.dock .row { display: flex; gap: 10px; align-items: center; }
+.dock .field { flex: 1; height: 48px; border-radius: 24px; background: #F1F3F5; display: flex; align-items: center; padding: 0 16px; color: var(--muted); font-size: 16px; gap: 10px; }
+.dock .mic { width: 56px; height: 56px; border-radius: 50%; background: var(--km-2); color: #fff; display: grid; place-items: center; }
+.dock .mic .ic { width: 24px; height: 24px; }
+.cap { font: 13px 'Roboto'; color: #36414A; margin-top: 12px; text-align: center; }
+</style>
+<style id="color">
+body { background: linear-gradient(135deg, #8FB0D8 0%, #9FD0CB 50%, #EBC9A6 100%); }
+.conv { background: radial-gradient(520px 420px at 10% 25%, #B5E3C8 0%, transparent 65%), radial-gradient(520px 420px at 95% 85%, #F7CFA3 0%, transparent 65%), radial-gradient(560px 420px at 90% 5%, #AFCBF5 0%, transparent 65%), linear-gradient(180deg, #CFDDEA, #DCE6EC); }
+.m.out { background: linear-gradient(135deg, #1660C9 0%, #0B3F8C 100%); color: #fff; }
+.m.out .au.k { color: #BFE0FF; } .m.out time, .m.out time .ic { color: #BFD6F5; }
+.m.out.ordercard .head { border-color: rgba(255,255,255,.2); }
+.m.out.ordercard .head span { border-color: #fff; color: #fff; }
+.m.out.ordercard dt { color: #A9C6EE; }
+.m.out .voice .pl { background: #fff; color: #0B3F8C; }
+.m.out .wave i { background: rgba(255,255,255,.4); } .m.out .wave i.p { background: #fff; }
+.m.out .voice small { color: #BFD6F5; }
+.voice .pl { background: linear-gradient(135deg, #1660C9, #0E97A6); }
+.c.sel { background: linear-gradient(100deg, #0B3F8C 0%, #1660C9 70%, #0E97A6 120%); }
+.ava { background-image: linear-gradient(145deg, rgba(255,255,255,.22), rgba(0,0,0,.12)); }
+.hz { background: repeating-linear-gradient(-45deg, #E5304A 0 6px, #FF8A5C 6px 12px) !important; }
+.ch .stpill { background: linear-gradient(90deg, #FFD84D, #FFEFA8); color: #6B4700; }
+.pin::before { background: linear-gradient(180deg, #1660C9, #0E97A6); width: 3px; }
+.side-cnt div { color: #fff; }
+.side-cnt div span { color: rgba(255,255,255,.88); }
+.side-cnt div:nth-child(1) { background: linear-gradient(135deg, #0B3F8C, #2A74D8); }
+.side-cnt div:nth-child(2) { background: linear-gradient(135deg, #17723A, #2FB36A); }
+.side-cnt div:nth-child(3) { background: linear-gradient(135deg, #B5162E, #FF5A3D); }
+.side-cnt div:nth-child(4) { background: linear-gradient(135deg, #C24E00, #F59E0B); }
+.side-cnt .bad b { color: #fff; }
+.dock .b.pri { background: linear-gradient(90deg, #0B3F8C, #1A6AD6); box-shadow: 0 10px 22px -10px rgba(11,63,140,.8); }
+.dock .mic { background: linear-gradient(135deg, #1660C9, #0E97A6); box-shadow: 0 8px 18px -8px rgba(14,151,166,.9); }
+.scr { background: radial-gradient(260px 300px at 10% 35%, #B5E3C8 0%, transparent 65%), radial-gradient(280px 300px at 95% 75%, #F7CFA3 0%, transparent 65%), radial-gradient(280px 240px at 85% 10%, #AFCBF5 0%, transparent 65%), #D3E0EA; }
+</style>
+</head>
+<body>
+<div class="stage">
+<div>
+<div class="win">
+  <aside class="side">
+    <div class="sh"><img src="../../../frontend/public/brand/km-logo.png" alt="КМ"><div class="srch"><i data-i="search"></i>Наряд, оборудование, человек</div></div>
+    <div class="folders"><a class="on">Смена <em>7</em></a><a>Аварийные <em>1</em></a><a>Проверка</a><a>Архив</a></div>
+    <div class="chats">
+      <div class="c"><div class="ava hz">ОБ<br>007<i style="background:#D0302A"></i></div><div><b>№561 Насос Н-7</b><span class="pv late">Не принят 6 мин, повтор в Telegram</span></div><div class="r"><time>14:01</time><span class="badge red">1</span></div></div>
+      <div class="c sel"><div class="ava" style="background:#5C7A99">КТ<br>002<i style="background:#F2C200"></i></div><div><b>№556 Конвейер К-2</b><span class="pv"><span class="who">Абенов Б.:</span> Фото</span></div><div class="r"><time>14:06</time></div></div>
+      <div class="c"><div class="ava" style="background:#7D6A9E">ДР<br>005<i style="background:#3B6FD8"></i></div><div><b>№558 Грохот ГИТ-71</b><span class="pv"><span class="who">Байжанов А.:</span> ждём подшипник со склада</span></div><div class="r"><time class="late">−45 мин</time><span class="badge">2</span></div></div>
+      <div class="c"><div class="ava" style="background:#6E8A5A">ДР<br>004<i style="background:#F2C200"></i></div><div><b>№557 Питатель ПП-2-12</b><span class="pv"><span class="who">Сидоренко А.:</span> Голосовое, 0:21</span></div><div class="r"><time>13:47</time></div></div>
+      <div class="c"><div class="ava" style="background:#A2754E">ОБ<br>003<i style="background:#1F7A3C"></i></div><div><b>№562 Сепаратор ПБМ</b><span class="pv"><span class="who">Проверка ИИ:</span> 88 из 100, можно закрыть</span></div><div class="r"><time>13:18</time><span class="badge">1</span></div></div>
+      <div class="c"><div class="ava" style="background:#5C7A99">КТ<br>003<i style="background:#3B6FD8"></i></div><div><b>№563 Конвейер К-3</b><span class="pv"><span class="who">Вы:</span> Сход ленты влево, подтянуть ролики</span></div><div class="r"><time>12:40</time></div></div>
+      <div class="c"><div class="ava" style="background:#7D6A9E">ДР<br>006<i style="background:#3B6FD8"></i></div><div><b>№559 Маслостанция НМШ-5</b><span class="pv"><span class="who">Вы:</span> Плановая замена фильтроэлемента</span></div><div class="r"><time>08:15</time></div></div>
+      <div class="c"><div class="ava" style="background:#8E9AA5">ОБ<br>011<i style="background:#1F7A3C"></i></div><div><b>№554 Фильтр-пресс</b><span class="pv">Закрыт мастером, 4,5 из 5</span></div><div class="r"><time>10:22</time></div></div>
+      <div class="c"><div class="ava" style="background:#A2754E">ДР<br>002<i style="background:#1F7A3C"></i></div><div><b>№552 Дробилка КМД-1750</b><span class="pv">Закрыт мастером, 5 из 5</span></div><div class="r"><time>09:05</time></div></div>
+    </div>
+  </aside>
+
+  <section class="conv">
+    <div class="ch"><div><b>№556 Конвейер ленточный К-2</b><span>Абенов Бауыржан, электромонтёр</span></div><span class="stpill">В работе 1:12</span>
+      <div class="acts"><span><i data-i="search"></i></span><span><i data-i="more"></i></span></div></div>
+    <div class="pin"><div><b>Задание</b>Двигатель привода греется, срабатывает тепловая защита</div><div class="tm"><b>15:30</b><span style="display:block;font-size:12px;color:var(--muted)">срок</span></div></div>
+    <div class="msgs">
+      <div class="day">Сегодня</div>
+      <div class="m out ordercard">
+        <div class="head"><b>№556</b><span>КТ-002</span><em>Высокий</em></div>
+        <div class="body">Двигатель привода греется, срабатывает тепловая защита. Посмотреть муфту и подшипники двигателя.
+          <dl><dt>Участок</dt><dd>Конвейерный транспорт, галерея 3</dd><dt>Норматив</dt><dd>2,0 ч, шифр Э-03</dd></dl>
+          <time>12:48<i data-i="checks"></i></time></div>
+      </div>
+      <div class="sys">Абенов Б. принял наряд в работу, 12:55</div>
+      <div class="m"><div class="au">Абенов Бауыржан</div>
+        <div class="voice"><span class="pl"><i data-i="play"></i></span><div><div class="wave" id="w1"></div><small>0:14</small></div></div>
+        <div class="trans">Подшипник со стороны вентилятора гудит, крыльчатка забита пылью. Чищу, подшипник меняю, он есть в шкафу.</div>
+        <time>13:20</time></div>
+      <div class="m out"><div class="au k">Вы</div>Хорошо. Перед пуском замерь ток по фазам, запиши в наряд.<time>13:22<i data-i="checks"></i></time></div>
+      <div class="m"><div class="au">Абенов Бауыржан</div>Принял. Пуск в 14:20 после замера.<time>13:23</time></div>
+      <div class="sys">Абенов Б. добавил 2 фото «после», 14:06</div>
+    </div>
+    <div class="input"><i data-i="clip"></i>Сообщение исполнителю<span class="send"><i data-i="send"></i></span></div>
+  </section>
+
+  <aside class="info">
+    <div class="side-cnt"><div><b>7</b><span>выдано</span></div><div><b>3</b><span>выполнено</span></div><div class="bad"><b>1</b><span>просрочен</span></div><div class="bad"><b>2</b><span>в простое</span></div></div>
+    <div><h4>Наряд</h4><dl class="kv"><dt>Приоритет</dt><dd>Высокий</dd><dt>Выдан</dt><dd>12:48</dd><dt>Принят</dt><dd>12:55</dd><dt>Простой</dt><dd style="color:var(--red)">1 ч 19 мин</dd></dl></div>
+    <div><h4>Материалы по норме Э-03</h4><div class="mats"><div>Подшипник 6312-2RS<span>1 шт</span></div><div>Смазка Литол-24<span>0,2 кг</span></div><div>Ветошь<span>0,5 кг</span></div></div></div>
+    <div class="ppl"><h4>Свободны сейчас</h4>
+      <div class="p"><span class="a" style="background:#4C7F6E">КС<i style="background:#1F7A3C"></i></span><div>Ковальчук С.<small>слесарь-ремонтник</small></div></div>
+      <div class="p"><span class="a" style="background:#2F7D6D">АЕ<i style="background:#1F7A3C"></i></span><div>Ахметов Е.<small>слесарь-ремонтник</small></div></div>
+    </div>
+  </aside>
+</div>
+<div class="cap">Панель мастера: каждый наряд как переписка, история и решения в одном месте</div>
+</div>
+
+<div>
+<div class="phone"><div class="scr">
+  <div class="sbar"><span>14:07</span><span>LTE 78%</span></div>
+  <div class="pch"><i data-i="back"></i><div class="ava" style="background:#5C7A99">КТ<br>002</div><div><b>№556 Конвейер К-2</b><span>В работе 1:12 из 2:00</span></div></div>
+  <div class="pmsgs">
+    <div class="m"><div class="au k">Ковалёв А., мастер</div>Двигатель привода греется, срабатывает тепловая защита. Посмотреть муфту и подшипники.<time>12:48</time></div>
+    <div class="m out"><div class="voice"><span class="pl"><i data-i="play"></i></span><div><div class="wave" id="w2"></div><small>0:14</small></div></div><time>13:20<i data-i="checks"></i></time></div>
+    <div class="m"><div class="au k">Ковалёв А., мастер</div>Хорошо. Перед пуском замерь ток по фазам, запиши в наряд.<time>13:22</time></div>
+  </div>
+  <div class="dock">
+    <div class="two"><span class="b sec">Приостановить</span><span class="b pri">Исполнено</span></div>
+    <div class="row"><span class="field"><i data-i="camera"></i>Сообщение</span><span class="mic"><i data-i="mic"></i></span></div>
+  </div>
+</div></div>
+<div class="cap">Исполнитель: голосом в перчатках, не печатая</div>
+</div>
+</div>
+<script>
+  for (const [id, n, played] of [['w1', 40, 14], ['w2', 30, 0]]) {
+    const el = document.getElementById(id); let seed = 7
+    for (let k = 0; k < n; k++) { seed = (seed * 9301 + 49297) % 233280; const h = 5 + Math.round((seed / 233280) * 20); const i = document.createElement('i'); i.style.height = h + 'px'; if (k < played) i.className = 'p'; el.appendChild(i) }
+  }
+</script>
+<script src="sprite.js"></script>
+</body>
+</html>

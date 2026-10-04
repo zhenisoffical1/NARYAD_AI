@@ -24,8 +24,8 @@ export function Tabs<V extends string>({
             aria-selected={active}
             onClick={() => onChange(item.value)}
             className={cn(
-              'flex min-h-12 flex-1 items-center justify-center gap-2 rounded-[4px] px-3 font-semibold',
-              active ? 'bg-surface text-ink shadow-raised' : 'text-ink-2',
+              'flex min-h-12 flex-1 items-center justify-center gap-2 rounded-[6px] px-3 font-semibold',
+              active ? 'bg-surface text-accent shadow-raised' : 'text-ink-2 hover:text-ink',
             )}
           >
             {item.label}

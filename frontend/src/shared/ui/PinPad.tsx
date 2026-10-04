@@ -43,8 +43,8 @@ export function PinPad({
             key={i}
             className={cn(
               'size-5 rounded-full border-2',
-              error ? 'border-red' : 'border-ink',
-              i < value.length && (error ? 'bg-red' : 'bg-ink'),
+              error ? 'border-red' : 'border-accent',
+              i < value.length && (error ? 'bg-red' : 'bg-accent'),
             )}
           />
         ))}
@@ -64,10 +64,10 @@ export function PinPad({
               }}
               aria-label={key === 'back' ? t('ui.pinErase') : key}
               className={cn(
-                'flex h-[72px] items-center justify-center rounded-control text-[30px] font-medium cond',
+                'flex h-[72px] items-center justify-center rounded-[14px] text-[30px] font-medium cond',
                 key === 'back'
                   ? 'text-ink-2 active:bg-plate'
-                  : 'border-2 border-line bg-surface active:bg-plate',
+                  : 'border border-line bg-plate/70 hover:bg-accent-soft active:bg-accent-soft',
                 'disabled:opacity-40',
               )}
             >

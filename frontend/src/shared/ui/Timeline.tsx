@@ -39,7 +39,7 @@ export function Timeline({ events }: { events: OrderEvent[] }) {
               <span
                 aria-hidden
                 className={cn(
-                  'relative mt-1.5 size-3 rounded-[2px] border-2 border-surface',
+                  'relative mt-1.5 size-3 rounded-full border-2 border-surface',
                   (event.to_status && DOT[event.to_status]) || 'bg-ink-3',
                 )}
               />

@@ -11,15 +11,15 @@ import { cn } from '@/shared/lib/format'
 type Tone = 'work' | 'work-soft' | 'queue' | 'ok' | 'off' | 'danger' | 'danger-soft' | 'review' | 'issued'
 
 const TONE: Record<Tone, { box: string; mark: string }> = {
-  work: { box: 'bg-yellow text-steel border-yellow', mark: 'bg-steel' },
-  'work-soft': { box: 'bg-surface text-ink border-yellow', mark: 'bg-yellow' },
-  queue: { box: 'bg-queue-strong text-white border-queue-strong', mark: 'bg-white' },
-  ok: { box: 'bg-green-strong text-white border-green-strong', mark: 'bg-white' },
-  off: { box: 'bg-surface text-ink-3 border-line', mark: 'bg-off' },
+  work: { box: 'bg-yellow-soft text-amber border-yellow', mark: 'bg-yellow' },
+  'work-soft': { box: 'bg-surface text-amber border-yellow', mark: 'bg-yellow' },
+  queue: { box: 'bg-queue-soft text-queue-strong border-queue-soft dark:text-queue', mark: 'bg-queue' },
+  ok: { box: 'bg-green-soft text-green-strong border-green-soft dark:text-green', mark: 'bg-green' },
+  off: { box: 'bg-plate text-ink-3 border-plate', mark: 'bg-off' },
   danger: { box: 'bg-red-strong text-white border-red-strong', mark: 'bg-white' },
-  'danger-soft': { box: 'bg-surface text-red border-red', mark: 'bg-red' },
-  review: { box: 'bg-surface text-accent border-accent', mark: 'bg-accent' },
-  issued: { box: 'bg-surface text-ink border-ink', mark: 'bg-ink' },
+  'danger-soft': { box: 'bg-red-soft text-red border-red-soft', mark: 'bg-red' },
+  review: { box: 'bg-accent-soft text-accent border-accent-soft', mark: 'bg-accent' },
+  issued: { box: 'bg-surface text-ink border-ink-3/40', mark: 'bg-ink' },
 }
 
 const ORDER_STATUS_TONE: Record<OrderStatus, Tone> = {
@@ -48,12 +48,12 @@ function Stamp({ tone, children, size = 'md' }: { tone: Tone; children: string; 
   return (
     <span
       className={cn(
-        'inline-flex shrink-0 items-center gap-1.5 rounded-tag border-2 stamp whitespace-nowrap',
-        size === 'md' ? 'h-7 px-2' : 'h-6 px-1.5',
+        'inline-flex shrink-0 items-center gap-1.5 rounded-[6px] border stamp whitespace-nowrap',
+        size === 'md' ? 'h-7 px-2.5' : 'h-6 px-2',
         style.box,
       )}
     >
-      <span aria-hidden className={cn('size-2', style.mark)} />
+      <span aria-hidden className={cn('size-2 rounded-full', style.mark)} />
       {children}
     </span>
   )

@@ -356,13 +356,13 @@ function CloseForm({
         </Panel>
 
         {showMissing && !missing.length && photoMissing && (
-          <section role="alert" className="rounded-[8px] border-2 border-red bg-red-soft p-4">
+          <section role="alert" className="rounded-[12px] border-2 border-red bg-red-soft p-4">
             <p className="font-semibold text-red">{t('close.noPhotoTitle')}</p>
             <p className="mt-1">{t('close.noPhotoHint')}</p>
           </section>
         )}
         {showMissing && missing.length > 0 && (
-          <section role="alert" className="rounded-[8px] border-2 border-red bg-red-soft p-4">
+          <section role="alert" className="rounded-[12px] border-2 border-red bg-red-soft p-4">
             <p className="font-semibold text-red">{t('close.missingTitle')}</p>
             <ul className="mt-1 list-disc pl-5">
               {missing.map((m) => (

@@ -45,7 +45,7 @@ export function RatingPage() {
 
         {data && data.score !== null && (
           <>
-            <section className="flex items-end justify-between gap-4 rounded-[8px] border border-line bg-surface px-5 py-5">
+            <section className="flex items-end justify-between gap-4 rounded-[12px] border border-line bg-surface px-5 py-5">
               <div>
                 <p className="text-small text-ink-3">{t('rating.orders', { n: data.orders })}</p>
                 {data.rank && (

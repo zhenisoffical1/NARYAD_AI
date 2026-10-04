@@ -80,7 +80,7 @@ export function DemoPage() {
 
   return (
     <div className="min-h-dvh bg-bg text-ink">
-      <header className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-2 border-b-4 border-bar-line bg-bar px-4 py-2 text-on-bar md:px-6">
+      <header className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-2 bg-bar bg-grad-bar px-4 py-2 text-on-bar md:px-6">
         <img src="/brand/km-logo-white.png" alt="АО «Костанайские Минералы»" className="h-9 w-auto" />
         <span aria-hidden className="hidden h-8 w-px bg-white/25 sm:block" />
         <div className="min-w-0">
@@ -128,7 +128,7 @@ export function DemoPage() {
 
 function HeaderStamp({ ok, children }: { ok: boolean; children: ReactNode }) {
   return (
-    <span className="stamp inline-flex min-h-8 items-center gap-2 rounded-[3px] border border-white/30 px-2.5">
+    <span className="stamp inline-flex min-h-8 items-center gap-2 rounded-full border border-white/30 px-3">
       <span aria-hidden className={cn('size-2 rounded-full', ok ? 'bg-green' : 'bg-off')} />
       {children}
     </span>

@@ -56,7 +56,7 @@ export function ReportsPage() {
   })
 
   return (
-    <div className="flex min-h-dvh flex-col bg-bg text-ink">
+    <div className="flex min-h-dvh flex-col bg-bg bg-grad-page text-ink">
       <DeskHeader title={t('reports.title')} subtitle={report.data?.period_label} />
 
       <main className="mx-auto flex w-full max-w-[1440px] flex-col gap-4 px-5 py-4">
