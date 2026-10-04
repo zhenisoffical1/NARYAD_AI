@@ -413,6 +413,12 @@ export const kk: Translation = {
     shiftNight: 'Түнгі ауысым',
     more: 'Тағы {{n}}',
   },
+  offline: {
+    queued: 'Желі жоқ. «{{action}}» байланыс қалпына келгенде жіберіледі',
+    pending: 'Жіберуді күтуде: {{n}}',
+    sent: 'Байланыс бар — жіберілген әрекеттер: {{n}}',
+    rejected: '№{{n}} наряд: әрекет қабылданбады — {{reason}}',
+  },
   desk: {
     overview: 'Шолу',
     shift: 'Ауысым',

@@ -113,7 +113,7 @@ test('сценарий защиты: 9 шагов', async ({ browser, request, i
   const second = await issueViaApi(request, master, worker.user.id, 'Подтекает фланец напорной линии насоса')
   await mobile.goto(`/w/orders/${second.id}`)
   await mobile.getByRole('button', { name: 'Поставить в очередь' }).click()
-  await expect(mobile.getByText('В очереди').first()).toBeVisible()
+  await expect.poll(async () => (await order(request, master, second.id)).status).toBe('QUEUED')
   const fired = await request.post(`/api/demo/orders/${second.id}/overdue`)
   expect(((await fired.json()) as { rules: string[] }).rules).toContain('overdue')
   for (const s of [worker, master]) {

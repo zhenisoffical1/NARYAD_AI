@@ -4,6 +4,8 @@ import { Outlet, useLocation, useNavigate } from 'react-router'
 import { TabBar } from '@/shared/ui'
 
 import { EmergencyWatcher } from './EmergencyWatcher'
+import { PendingBanner } from './PendingBanner'
+import { useOfflineSync } from './useOfflineSync'
 
 /** Каркас приложения исполнителя: экран + нижние вкладки (кроме карточки наряда — там свои кнопки). */
 export function WorkerShell() {
@@ -11,9 +13,11 @@ export function WorkerShell() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const inOrder = pathname.startsWith('/w/orders/')
+  useOfflineSync()
 
   return (
     <div className="flex min-h-dvh flex-col bg-bg text-ink">
+      <PendingBanner />
       <div className="flex flex-1 flex-col">
         <Outlet />
       </div>

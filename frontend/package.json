@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "typecheck": "tsc -b --noEmit",
-    "e2e": "playwright test e2e/flows",
+    "e2e": "playwright test e2e/demo-scenario.spec.ts --project=desktop --workers=1",
     "screens": "playwright test e2e/screens"
   },
   "dependencies": {
