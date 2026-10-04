@@ -37,6 +37,11 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: Connection) -> None:
+    if connection.dialect.name == "sqlite":
+        # Batch-режим на SQLite пересоздаёт таблицу. С включёнными внешними ключами удаление
+        # старой `orders` каскадом стёрло бы журнал, фото и списания — выключаем на время миграции.
+        connection.exec_driver_sql("PRAGMA foreign_keys=OFF")
+        connection.commit()
     context.configure(
         connection=connection,
         target_metadata=target_metadata,
