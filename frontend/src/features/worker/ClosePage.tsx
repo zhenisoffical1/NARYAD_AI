@@ -121,6 +121,7 @@ function CloseForm({
   const [noMaterials, setNoMaterials] = useState(() => restored?.noMaterials ?? false)
   const [comment, setComment] = useState(() => restored?.comment ?? '')
   const [photos, setPhotos] = useState<PickedPhoto[]>([])
+  const [photoWarned, setPhotoWarned] = useState(false)
   const [uploaded, setUploaded] = useState<Set<string>>(new Set())
   const [progress, setProgress] = useState<string | null>(null)
   const [showMissing, setShowMissing] = useState(false)
@@ -147,7 +148,6 @@ function CloseForm({
     works.trim().length < 3 && t('close.missingWorks'),
     !codeId && t('close.missingCode'),
     !noMaterials && lines.length === 0 && t('close.missingMaterials'),
-    photoRequired && !hasPhoto && t('close.missingPhoto'),
   ].filter(Boolean) as string[]
 
   const addLine = (materialId: number, quantity?: number) => {
@@ -189,9 +189,13 @@ function CloseForm({
     onSettled: () => setProgress(null),
   })
 
+  // Без фото «после» закрыть можно, но не случайно: первое нажатие предупреждает, что ИИ вернёт
+  // наряд на доработку, — решает проверка (ТЗ, сценарий защиты, шаг 7), а не запрет формы.
+  const photoMissing = photoRequired && !hasPhoto
   const onSubmit = () => {
-    if (missing.length) {
+    if (missing.length || (photoMissing && !photoWarned)) {
       setShowMissing(true)
+      if (!missing.length) setPhotoWarned(true)
       navigator.vibrate?.([40, 60, 40])
       return
     }
@@ -349,6 +353,12 @@ function CloseForm({
           />
         </Panel>
 
+        {showMissing && !missing.length && photoMissing && (
+          <section role="alert" className="rounded-[8px] border-2 border-red bg-red-soft p-4">
+            <p className="font-semibold text-red">{t('close.noPhotoTitle')}</p>
+            <p className="mt-1">{t('close.noPhotoHint')}</p>
+          </section>
+        )}
         {showMissing && missing.length > 0 && (
           <section role="alert" className="rounded-[8px] border-2 border-red bg-red-soft p-4">
             <p className="font-semibold text-red">{t('close.missingTitle')}</p>

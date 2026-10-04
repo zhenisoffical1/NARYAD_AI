@@ -531,16 +531,8 @@ async def complete_order(
     if missing := set(material_ids) - materials.keys():
         raise Invalid(f"Материалы не найдены в справочнике: {sorted(missing)}.")
 
-    if order.type == OrderType.UNPLANNED:
-        after = await session.scalar(
-            select(func.count())
-            .select_from(Photo)
-            .where(Photo.order_id == order.id, Photo.kind == PhotoKind.AFTER)
-        )
-        if not after:
-            raise Invalid(
-                "Для внепланового наряда нужно фото «после». Сфотографируйте результат работы."
-            )
+    # Фото «после» для внепланового наряда не запрещает закрытие: его отсутствие — критичное
+    # замечание ИИ-проверки (наряд вернётся на доработку), а не ошибка формы (CLAUDE.md, 6.2).
 
     order.works_done = req.works_done.strip()
     order.fault_code_id = req.fault_code_id

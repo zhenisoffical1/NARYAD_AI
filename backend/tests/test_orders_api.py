@@ -213,18 +213,11 @@ async def test_full_cycle_through_api(
     assert paused.json()["status"] == "PAUSED"
     await act(client, worker, oid, "resume")
 
-    # Внеплановый без фото «после» закрыть нельзя
     body = {
         "works_done": "Заменено торцевое уплотнение, подтянуты фланцы",
         "fault_code_id": refs.code_hydraulic.id,
         "materials": [{"material_id": refs.oil.id, "quantity": "1.5"}],
     }
-    no_photo = await client.post(
-        f"/api/orders/{oid}/complete", json=body, headers=auth_header(worker)
-    )
-    assert no_photo.status_code == 422
-    assert "фото «после»" in no_photo.json()["detail"]
-
     photo = await upload(client, worker, oid, "after", jpeg_bytes(taken_at=utcnow()))
     assert photo.status_code == 201
     assert photo.json()[0]["thumb_url"].endswith("_thumb.jpg")
@@ -566,3 +559,24 @@ async def test_live_event_reaches_assignee(client: AsyncClient, team, refs: Refs
         assert resp.status_code == 201
         types = {ws.receive_json()["type"], ws.receive_json()["type"]}
         assert types == {"order.created", "notification.created"}
+
+
+async def test_unplanned_without_after_photo_goes_back_to_rework(
+    client: AsyncClient, team, refs: Refs
+) -> None:
+    """Сценарий защиты, шаг 7: закрыть без фото можно, но ИИ сразу вернёт на доработку."""
+    master, worker = team["master"], team["worker"]
+    oid = (await issue(client, master, refs, worker))["id"]
+    await act(client, worker, oid, "accept")
+    await act(client, worker, oid, "start")
+    body = {
+        "works_done": "Заменено торцевое уплотнение, подтянуты фланцы",
+        "fault_code_id": refs.code_hydraulic.id,
+        "materials": [{"material_id": refs.oil.id, "quantity": "1.5"}],
+    }
+    done = await client.post(f"/api/orders/{oid}/complete", json=body, headers=auth_header(worker))
+    assert done.status_code == 200, done.text
+
+    detail = (await client.get(f"/api/orders/{oid}", headers=auth_header(master))).json()
+    assert detail["status"] == "REWORK"
+    assert "фото «после»" in detail["assessment"]["checks"][0]["detail"]
