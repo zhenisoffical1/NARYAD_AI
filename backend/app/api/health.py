@@ -19,7 +19,7 @@ async def health(session: AsyncSession = Depends(get_session)) -> JSONResponse:
     body = {
         "status": "ok" if db_ok else "degraded",
         "db": "ok" if db_ok else "unavailable",
-        "llm": "mock" if settings.llm_mock else "anthropic",
+        "llm": settings.llm_backend,
         "telegram": "on" if settings.telegram_bot_token else "off",
         "demo_mode": settings.demo_mode,
     }

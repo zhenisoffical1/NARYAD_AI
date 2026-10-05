@@ -3,19 +3,24 @@
 - Ответ строго по JSON-схеме (structured outputs) и проверяется Pydantic; один повтор,
   если ответ не прошёл проверку.
 - Каждый вызов пишется в `llm_calls`: назначение, модель, время, токены, успех, хэш промпта.
-- Без ANTHROPIC_API_KEY, при отказе модели или сбое API возвращается None — вызывающий код
+- Без ключа, при отказе модели или сбое API возвращается None — вызывающий код
   переходит на правила. Проверка наряда не зависит от доступности внешнего сервиса.
+- Поставщики: Claude (Anthropic API) или Gemini (бесплатный ключ Google AI Studio) —
+  `settings.llm_backend`. Обезличивание, схема, повтор и журнал одинаковы для обоих.
 """
 
+import asyncio
 import hashlib
 import json
 import logging
 import time
 from functools import cache
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import anthropic
+import httpx
 from pydantic import BaseModel, ValidationError
 
 from app.config import settings
@@ -116,7 +121,10 @@ async def ask_json[T: BaseModel](
     """Ответ модели как экземпляр `output` или None (mock-режим, отказ, сбой, невалидный JSON)."""
     if settings.llm_mock:
         return None
-    model = settings.llm_fast_model if fast else settings.llm_model
+    if settings.llm_backend == "gemini":
+        return await _ask_gemini(purpose, output, system=system, content=content, fast=fast,
+                                 max_tokens=max_tokens)  # fmt: skip
+    model = settings.active_model(fast)
     params = _request(model, system, content, strict_schema(output), max_tokens)
     p_hash = _prompt_hash(system, content)
     client = _client()
@@ -152,6 +160,157 @@ async def ask_json[T: BaseModel](
                             error=f"попытка {attempt}: {exc.errors()[:3]}")  # fmt: skip
             continue
         await _log_call(purpose, model, started, p_hash, ok=True, usage=response.usage)
+        return result
+    return None
+
+
+# --- Gemini (Google AI Studio) ------------------------------------------------------------
+
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+# Если API не принял JSON-схему в generationConfig — схема уходит текстом в инструкцию
+_gemini_schema_in_prompt = False
+
+
+def _inline_refs(schema: dict[str, Any]) -> dict[str, Any]:
+    """Pydantic кладёт вложенные модели в $defs со ссылками $ref — Gemini нужна схема без ссылок."""
+    defs = schema.get("$defs", {})
+
+    def walk(node: Any) -> Any:
+        if isinstance(node, dict):
+            ref = node.get("$ref")
+            if isinstance(ref, str) and ref.startswith("#/$defs/"):
+                return walk(defs[ref.removeprefix("#/$defs/")])
+            return {k: walk(v) for k, v in node.items() if k != "$defs"}
+        if isinstance(node, list):
+            return [walk(item) for item in node]
+        return node
+
+    result: dict[str, Any] = walk(schema)
+    return result
+
+
+def _gemini_parts(content: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    parts: list[dict[str, Any]] = []
+    for block in content:
+        if block["type"] == "text":
+            parts.append({"text": block["text"]})
+        else:
+            source = block["source"]
+            parts.append({"inlineData": {"mimeType": source["media_type"], "data": source["data"]}})
+    return parts
+
+
+def _gemini_body(system: str, content: list[dict[str, Any]], schema: dict[str, Any],
+                 max_tokens: int) -> dict[str, Any]:  # fmt: skip
+    config: dict[str, Any] = {
+        "responseMimeType": "application/json",
+        "maxOutputTokens": max_tokens,
+        "temperature": 0.2,
+    }
+    if _gemini_schema_in_prompt:
+        system = (
+            f"{system}\n\nОтвет — только JSON, строго по этой JSON-схеме, без пояснений:\n"
+            + json.dumps(schema, ensure_ascii=False)
+        )
+    else:
+        config["responseJsonSchema"] = schema
+    return {
+        "systemInstruction": {"parts": [{"text": system}]},
+        "contents": [{"role": "user", "parts": _gemini_parts(content) or [{"text": "—"}]}],
+        "generationConfig": config,
+    }
+
+
+async def _gemini_post(model: str, body: dict[str, Any]) -> tuple[int, dict[str, Any]]:
+    """Один HTTP-запрос к Gemini API: (код ответа, JSON). Отдельной функцией — для тестов."""
+    async with httpx.AsyncClient(timeout=settings.llm_timeout_seconds) as http:
+        response = await http.post(
+            GEMINI_URL.format(model=model),
+            headers={"x-goog-api-key": settings.gemini_api_key or ""},
+            json=body,
+        )
+    try:
+        data: dict[str, Any] = response.json()
+    except ValueError:
+        data = {"error": {"message": response.text[:300]}}
+    return response.status_code, data
+
+
+def _gemini_text(data: dict[str, Any]) -> tuple[str | None, str | None]:
+    """Текст ответа или причина, почему его нет (блокировка, пустой ответ)."""
+    candidates = data.get("candidates") or []
+    if not candidates:
+        reason = (data.get("promptFeedback") or {}).get("blockReason", "нет ответа")
+        return None, f"blocked: {reason}"
+    candidate = candidates[0]
+    parts = (candidate.get("content") or {}).get("parts") or []
+    text = "".join(p.get("text", "") for p in parts if not p.get("thought"))
+    if not text:
+        return None, f"empty: {candidate.get('finishReason', '?')}"
+    return text, None
+
+
+async def _ask_gemini[T: BaseModel](
+    purpose: str,
+    output: type[T],
+    *,
+    system: str,
+    content: list[dict[str, Any]],
+    fast: bool,
+    max_tokens: int,
+) -> T | None:
+    global _gemini_schema_in_prompt
+    model = settings.active_model(fast)
+    schema = _inline_refs(strict_schema(output))
+    p_hash = _prompt_hash(system, content)
+
+    attempt = 0
+    rate_limited = schema_fallback = False
+    while attempt < ATTEMPTS:
+        attempt += 1
+        started = time.monotonic()
+        try:
+            status, data = await _gemini_post(
+                model, _gemini_body(system, content, schema, max_tokens)
+            )
+        except httpx.HTTPError as exc:  # таймаут, сеть
+            await _log_call(purpose, model, started, p_hash, ok=False, error=repr(exc))
+            log.warning("Gemini %s: нет ответа (%s)", purpose, type(exc).__name__)
+            return None
+
+        if status != 200:
+            message = str((data.get("error") or {}).get("message", ""))[:300]
+            await _log_call(purpose, model, started, p_hash, ok=False, error=f"{status}: {message}")
+            if status == 400 and not _gemini_schema_in_prompt and not schema_fallback:
+                # 400: чаще всего API не принял JSON-схему — один повтор со схемой в инструкции
+                _gemini_schema_in_prompt = schema_fallback = True
+                attempt -= 1
+                continue
+            if status == 429 and not rate_limited:
+                # Бесплатный лимит запросов в минуту — одна пауза и повтор, дальше правила
+                rate_limited = True
+                await asyncio.sleep(5)
+                attempt -= 1
+                continue
+            log.warning("Gemini %s: ошибка API %s", purpose, status)
+            return None
+
+        usage = data.get("usageMetadata") or {}
+        tokens = SimpleNamespace(
+            input_tokens=usage.get("promptTokenCount"),
+            output_tokens=usage.get("candidatesTokenCount"),
+        )
+        text, problem = _gemini_text(data)
+        if text is None:
+            await _log_call(purpose, model, started, p_hash, ok=False, usage=tokens, error=problem)
+            return None
+        try:
+            result = output.model_validate_json(text)
+        except ValidationError as exc:
+            await _log_call(purpose, model, started, p_hash, ok=False, usage=tokens,
+                            error=f"попытка {attempt}: {exc.errors()[:3]}")  # fmt: skip
+            continue
+        await _log_call(purpose, model, started, p_hash, ok=True, usage=tokens)
         return result
     return None
 

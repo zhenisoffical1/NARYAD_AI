@@ -149,7 +149,7 @@ class LlmCallOut(ORMModel):
 class SystemStatus(BaseModel):
     """Сводка для администратора: режимы, связь, объём данных, журнал вызовов модели."""
 
-    llm_mode: str  # mock | anthropic
+    llm_mode: str  # mock | anthropic | gemini
     llm_model: str
     llm_fast_model: str
     telegram: bool

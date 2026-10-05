@@ -75,7 +75,7 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     if settings.jwt_secret == DEV_JWT_SECRET and not settings.demo_mode:
         log.warning("JWT_SECRET не задан — используйте случайную строку на сервере")
     await bus.start()
-    log.info("НарядAI запущен: ИИ — %s", "mock" if settings.llm_mock else settings.llm_model)
+    log.info("НарядAI запущен: ИИ — %s", "mock" if settings.llm_mock else settings.active_model())
     yield
     await bus.stop()
 

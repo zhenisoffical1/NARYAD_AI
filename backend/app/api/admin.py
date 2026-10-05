@@ -153,9 +153,9 @@ async def system_status(session: AsyncSession = Depends(get_session)) -> SystemS
         return int(await session.scalar(stmt) or 0)
 
     return SystemStatus(
-        llm_mode="mock" if settings.llm_mock else "anthropic",
-        llm_model=settings.llm_model,
-        llm_fast_model=settings.llm_fast_model,
+        llm_mode=settings.llm_backend,
+        llm_model=settings.active_model(),
+        llm_fast_model=settings.active_model(fast=True),
         telegram=bool(settings.telegram_bot_token),
         telegram_bot=settings.telegram_bot_username,
         demo_mode=settings.demo_mode,

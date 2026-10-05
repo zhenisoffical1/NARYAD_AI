@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 from zoneinfo import ZoneInfo
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -55,9 +56,15 @@ class Settings(BaseSettings):
     deadline_hours_normal: float = 8
     deadline_hours_planned: float = 24
 
+    # Поставщик модели: auto — Claude, если задан его ключ, иначе Gemini, иначе правила (mock)
+    llm_provider: Literal["auto", "anthropic", "gemini"] = "auto"
     anthropic_api_key: str | None = None
     llm_model: str = "claude-sonnet-5-5"
     llm_fast_model: str = "claude-haiku-4-5-20251001"
+    # Gemini API — бесплатный ключ в Google AI Studio (aistudio.google.com/apikey)
+    gemini_api_key: str | None = None
+    gemini_model: str = "gemini-3.5-flash"
+    gemini_fast_model: str = "gemini-3.5-flash"
     # Проверка наряда должна уложиться в 15 с: на один вызов — не больше 12 с, при сбое — правила
     llm_timeout_seconds: float = 12
     llm_effort: str = "low"  # классификация по готовым фактам — глубокое рассуждение не нужно
@@ -78,8 +85,23 @@ class Settings(BaseSettings):
     telegram_poll_seconds: float = 2
 
     @property
+    def llm_backend(self) -> Literal["anthropic", "gemini", "mock"]:
+        """Кто отвечает за ИИ сейчас: выбранный поставщик, если у него есть ключ."""
+        if self.llm_provider in ("auto", "anthropic") and self.anthropic_api_key:
+            return "anthropic"
+        if self.llm_provider in ("auto", "gemini") and self.gemini_api_key:
+            return "gemini"
+        return "mock"
+
+    @property
     def llm_mock(self) -> bool:
-        return not self.anthropic_api_key
+        return self.llm_backend == "mock"
+
+    def active_model(self, fast: bool = False) -> str:
+        """Модель для вызова (и для журнала, экрана «Система», health)."""
+        if self.llm_backend == "gemini":
+            return self.gemini_fast_model if fast else self.gemini_model
+        return self.llm_fast_model if fast else self.llm_model
 
     @property
     def is_sqlite(self) -> bool:

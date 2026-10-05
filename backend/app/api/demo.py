@@ -131,7 +131,7 @@ async def state(session: AsyncSession = Depends(get_session)) -> DemoState:
         await session.scalars(stmt), key=lambda o: (PRIORITY_RANK[o.priority], o.number)
     )
     return DemoState(
-        llm="mock" if settings.llm_mock else settings.llm_model,
+        llm="mock" if settings.llm_mock else settings.active_model(),
         telegram=bool(settings.telegram_bot_token),
         telegram_bot=settings.telegram_bot_username,
         public_url=settings.public_url,

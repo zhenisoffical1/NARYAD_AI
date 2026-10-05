@@ -5,6 +5,7 @@ import os
 os.environ["DATABASE_URL"] = os.environ.get("TEST_DATABASE_URL", "sqlite+aiosqlite:///:memory:")
 os.environ.setdefault("JWT_SECRET", "test-secret-of-sufficient-length-32b")
 os.environ["ANTHROPIC_API_KEY"] = ""
+os.environ["GEMINI_API_KEY"] = ""  # тесты не ходят к настоящей модели
 os.environ["TELEGRAM_BOT_TOKEN"] = ""
 os.environ["DEMO_MODE"] = "false"  # локальный .env не должен влиять на тесты
 os.environ["DB_POOL"] = "false"  # PostgreSQL в CI: без пула соединений между циклами событий

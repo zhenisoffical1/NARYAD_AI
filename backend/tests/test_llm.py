@@ -1,5 +1,6 @@
 """LLM-шлюз без сети: подменённый клиент, журнал вызовов, повтор, фолбэк на правила."""
 
+import json
 from collections.abc import Callable
 from pathlib import Path
 from types import SimpleNamespace
@@ -218,3 +219,132 @@ async def test_unsure_photo_model_adds_no_penalty(
     result = await compare_photos(base, pair, "Течь", "Замена")
     assert not result.check.critical and result.check.penalty == 0
     assert result.confidence == 0.4  # низкая уверенность → решение за мастером
+
+
+# --- Gemini: бесплатный ключ Google AI Studio --------------------------------------------
+
+
+class FakeGemini:
+    """Подмена HTTP-запроса к Gemini: отвечает заготовками и запоминает тела запросов."""
+
+    def __init__(self, *replies: tuple[int, dict[str, Any]]) -> None:
+        self.replies = list(replies)
+        self.bodies: list[dict[str, Any]] = []
+        self.models: list[str] = []
+
+    async def __call__(self, model: str, body: dict[str, Any]) -> tuple[int, dict[str, Any]]:
+        self.models.append(model)
+        self.bodies.append(body)
+        return self.replies.pop(0)
+
+
+def _gemini_ok(text: str) -> tuple[int, dict[str, Any]]:
+    return 200, {
+        "candidates": [{"content": {"parts": [{"text": text}]}, "finishReason": "STOP"}],
+        "usageMetadata": {"promptTokenCount": 120, "candidatesTokenCount": 40},
+    }
+
+
+@pytest.fixture
+def fake_gemini(monkeypatch: pytest.MonkeyPatch) -> Callable[..., FakeGemini]:
+    monkeypatch.setattr(settings, "anthropic_api_key", "")
+    monkeypatch.setattr(settings, "gemini_api_key", "test-gemini-key")
+    monkeypatch.setattr(gateway, "_gemini_schema_in_prompt", False)
+
+    async def no_sleep(_seconds: float) -> None:
+        return None
+
+    monkeypatch.setattr(gateway.asyncio, "sleep", no_sleep)
+
+    def install(*replies: tuple[int, dict[str, Any]]) -> FakeGemini:
+        fake = FakeGemini(*replies)
+        monkeypatch.setattr(gateway, "_gemini_post", fake)
+        return fake
+
+    return install
+
+
+def test_provider_choice(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(settings, "anthropic_api_key", "")
+    monkeypatch.setattr(settings, "gemini_api_key", "")
+    assert settings.llm_backend == "mock"
+    monkeypatch.setattr(settings, "gemini_api_key", "g")
+    assert settings.llm_backend == "gemini" and settings.active_model() == settings.gemini_model
+    monkeypatch.setattr(settings, "anthropic_api_key", "a")
+    assert settings.llm_backend == "anthropic", "оба ключа — по умолчанию Claude"
+    monkeypatch.setattr(settings, "llm_provider", "gemini")
+    assert settings.llm_backend == "gemini"
+
+
+async def test_gemini_answer_with_photo_is_parsed_and_logged(
+    session: AsyncSession, fake_gemini: Callable[..., FakeGemini]
+) -> None:
+    fake = fake_gemini(_gemini_ok(GOOD))
+    content = [gateway.text_block("факты"), gateway.image_block("QUJD")]
+    out = await ask_json("works_match", WorksMatchOut, system="инструкция", content=content)
+    assert out is not None and out.match == 0.9
+
+    body = fake.bodies[0]
+    assert fake.models == [settings.gemini_model]
+    assert body["systemInstruction"]["parts"][0]["text"] == "инструкция"
+    parts = body["contents"][0]["parts"]
+    assert parts[0] == {"text": "факты"}
+    assert parts[1] == {"inlineData": {"mimeType": "image/jpeg", "data": "QUJD"}}
+    config = body["generationConfig"]
+    assert config["responseMimeType"] == "application/json"
+    assert config["responseJsonSchema"]["additionalProperties"] is False
+
+    (call,) = await _calls(session)
+    assert call.ok and call.model == settings.gemini_model
+    assert (call.input_tokens, call.output_tokens) == (120, 40)
+
+
+async def test_gemini_schema_rejected_goes_into_instruction(
+    session: AsyncSession, fake_gemini: Callable[..., FakeGemini]
+) -> None:
+    fake = fake_gemini(
+        (400, {"error": {"message": "Unknown name responseJsonSchema"}}), _gemini_ok(GOOD)
+    )
+    out = await ask_json("works_match", WorksMatchOut, system="s", content=[])
+    assert out is not None
+    retry = fake.bodies[1]
+    assert "responseJsonSchema" not in retry["generationConfig"]
+    assert "JSON-схеме" in retry["systemInstruction"]["parts"][0]["text"]
+    assert [c.ok for c in await _calls(session)] == [False, True]
+
+
+async def test_gemini_rate_limit_waits_once_then_rules(
+    session: AsyncSession, fake_gemini: Callable[..., FakeGemini]
+) -> None:
+    limit = (429, {"error": {"message": "Resource exhausted"}})
+    fake_gemini(limit, _gemini_ok(GOOD))
+    assert await ask_json("works_match", WorksMatchOut, system="s", content=[]) is not None
+
+    fake_gemini(limit, limit)
+    assert await ask_json("works_match", WorksMatchOut, system="s", content=[]) is None
+
+
+async def test_gemini_blocked_or_invalid_falls_back(
+    session: AsyncSession, fake_gemini: Callable[..., FakeGemini]
+) -> None:
+    fake_gemini((200, {"promptFeedback": {"blockReason": "SAFETY"}}))
+    assert await ask_json("works_match", WorksMatchOut, system="s", content=[]) is None
+
+    fake_gemini(_gemini_ok('{"match": 7}'), _gemini_ok('{"match": 7}'))
+    assert await ask_json("works_match", WorksMatchOut, system="s", content=[]) is None
+    errors = [c.error or "" for c in await _calls(session)]
+    assert errors[0].startswith("blocked: SAFETY")
+
+
+def test_gemini_schema_has_no_refs() -> None:
+    from pydantic import BaseModel
+
+    class Inner(BaseModel):
+        name: str
+
+    class Outer(BaseModel):
+        items: list[Inner]
+
+    schema = gateway._inline_refs(strict_schema(Outer))
+    assert "$defs" not in json.dumps(schema) and "$ref" not in json.dumps(schema)
+    assert schema["properties"]["items"]["items"]["properties"]["name"]["type"] == "string"

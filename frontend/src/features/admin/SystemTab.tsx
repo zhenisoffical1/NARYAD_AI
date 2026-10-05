@@ -42,11 +42,11 @@ export function SystemTab() {
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Status
-          ok={s.llm_mode === 'anthropic'}
+          ok={s.llm_mode !== 'mock'}
           title={t('admin.sys.ai')}
-          value={s.llm_mode === 'anthropic' ? t('admin.sys.aiLive') : t('admin.sys.aiMock')}
+          value={s.llm_mode === 'mock' ? t('admin.sys.aiMock') : t('admin.sys.aiLive', { provider: s.llm_mode === 'gemini' ? 'Gemini' : 'Claude' })}
           hint={
-            s.llm_mode === 'anthropic' ? `${s.llm_model} / ${s.llm_fast_model}` : t('admin.sys.aiMockHint')
+            s.llm_mode === 'mock' ? t('admin.sys.aiMockHint') : `${s.llm_model} / ${s.llm_fast_model}`
           }
         />
         <Status

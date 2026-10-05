@@ -22,7 +22,7 @@ export interface LlmCall {
 }
 
 export interface SystemStatus {
-  llm_mode: 'mock' | 'anthropic'
+  llm_mode: 'mock' | 'anthropic' | 'gemini'
   llm_model: string
   llm_fast_model: string
   telegram: boolean

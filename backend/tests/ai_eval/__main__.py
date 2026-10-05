@@ -170,7 +170,7 @@ async def main() -> int:
         world = await build_world(session)
         await session.commit()
 
-    mode = "mock (правила, без ключа)" if settings.llm_mock else f"LLM {settings.llm_model}"
+    mode = "mock (правила, без ключа)" if settings.llm_mock else f"LLM {settings.active_model()}"
     print(f"НарядAI · оценка ИИ-проверки · {len(CASES)} случаев · режим: {mode}\n")
 
     after_bytes: dict[str, bytes] = {}
@@ -224,7 +224,7 @@ async def main() -> int:
     RESULTS.write_text(
         json.dumps(
             {
-                "mode": "mock" if settings.llm_mock else settings.llm_model,
+                "mode": "mock" if settings.llm_mock else settings.active_model(),
                 "accuracy": round(accuracy, 3),
                 "correct": correct,
                 "total": len(rows),
