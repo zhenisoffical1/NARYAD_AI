@@ -46,9 +46,17 @@ class PgBus:
         self._pool: asyncpg.Pool | None = None
         self._listener: asyncpg.Connection | None = None
         self._lock = asyncio.Lock()
+        self._loop: asyncio.AbstractEventLoop | None = None
         self._tasks: set[asyncio.Task[None]] = set()
 
     async def _get_pool(self) -> asyncpg.Pool:
+        # Соединения asyncpg привязаны к циклу событий. Если цикл сменился (тесты, перезапуск
+        # приложения в том же процессе), старый пул непригоден — создаём новый в текущем цикле.
+        loop = asyncio.get_running_loop()
+        if self._loop is not loop:
+            self._loop = loop
+            self._pool = None
+            self._lock = asyncio.Lock()
         async with self._lock:
             if self._pool is None:
                 self._pool = await asyncpg.create_pool(self._dsn, min_size=1, max_size=2)

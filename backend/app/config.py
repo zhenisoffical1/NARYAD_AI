@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     public_url: str = "http://localhost"
 
     demo_mode: bool = False
+    # Пул соединений с БД. В тестах выключен: у каждого теста свой цикл событий
+    db_pool: bool = True
 
     # Время и смены. С марта 2024 Казахстан живёт в едином поясе UTC+5.
     timezone: str = "Asia/Qostanay"

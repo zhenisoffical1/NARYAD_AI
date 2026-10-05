@@ -7,6 +7,7 @@ os.environ.setdefault("JWT_SECRET", "test-secret-of-sufficient-length-32b")
 os.environ["ANTHROPIC_API_KEY"] = ""
 os.environ["TELEGRAM_BOT_TOKEN"] = ""
 os.environ["DEMO_MODE"] = "false"  # локальный .env не должен влиять на тесты
+os.environ["DB_POOL"] = "false"  # PostgreSQL в CI: без пула соединений между циклами событий
 
 from collections.abc import AsyncIterator, Callable, Coroutine
 from datetime import timedelta
@@ -30,6 +31,7 @@ from app.models.enums import (
     Shift,
 )
 from app.security import create_access_token, hash_pin, login_throttle
+from app.services.notifications.bus import bus
 
 
 @pytest.fixture(autouse=True)
@@ -39,6 +41,8 @@ async def _schema() -> AsyncIterator[None]:
         await conn.run_sync(Base.metadata.create_all)
     login_throttle.reset()
     yield
+    # Шина PostgreSQL держит соединения в цикле событий теста — закрываем, пока он жив
+    await bus.stop()
 
 
 @pytest.fixture

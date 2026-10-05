@@ -8,13 +8,16 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy.pool import StaticPool
+from sqlalchemy.pool import NullPool, StaticPool
 
 from app.config import settings
 
 
-def make_engine(url: str) -> AsyncEngine:
+def make_engine(url: str, *, pooled: bool = True) -> AsyncEngine:
     if not url.startswith("sqlite"):
+        if not pooled:
+            # Тесты: у каждого теста свой цикл событий, соединения из пула в него не перенести
+            return create_async_engine(url, poolclass=NullPool)
         return create_async_engine(url, pool_pre_ping=True)
 
     # SQLite — для запуска без Docker и быстрых тестов. In-memory база живёт
@@ -40,7 +43,7 @@ def make_engine(url: str) -> AsyncEngine:
     return engine
 
 
-engine = make_engine(settings.database_url)
+engine = make_engine(settings.database_url, pooled=settings.db_pool)
 SessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 
