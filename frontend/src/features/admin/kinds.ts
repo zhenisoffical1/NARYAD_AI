@@ -111,9 +111,10 @@ export const KINDS: KindDef[] = [
         column: true,
         hint: true,
       },
+      { key: 'norm_hours', type: 'number', hint: true },
       { key: 'external_id', type: 'text' },
     ],
-    csv: ['code', 'category', 'name', 'external_id'],
+    csv: ['code', 'category', 'name', 'norm_hours', 'external_id'],
   },
   {
     kind: 'materials',

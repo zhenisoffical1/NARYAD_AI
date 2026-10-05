@@ -3,12 +3,14 @@ import { Navigate, Outlet, useLocation } from 'react-router'
 import type { Role } from '@/shared/api/types'
 import { homeFor, useSession } from '@/shared/lib/session'
 import { useLiveEvents } from '@/shared/lib/useLiveEvents'
+import { useNotificationChime } from '@/shared/lib/useNotificationChime'
 
 /** Пускает только указанные роли. Та же проверка повторяется на сервере (require_role). */
 export function RequireRole({ roles }: { roles: Role[] }) {
   const user = useSession((s) => s.user)
   const location = useLocation()
   useLiveEvents()
+  useNotificationChime()
 
   if (!user) {
     const next = encodeURIComponent(location.pathname + location.search)

@@ -115,3 +115,33 @@ test.describe('рабочие места на компьютере', () => {
     await page.screenshot({ path: `${SHOTS}/admin-system.png`, fullPage: true })
   })
 })
+
+test.describe('ассистент и срезы отчётов', () => {
+  test.skip(({ isMobile }) => isMobile, 'десктоп')
+
+  test('ассистент мастера отвечает по данным смены', async ({ page, request }) => {
+    await signIn(page, request, 'master1', '2222')
+    await page.goto('/panel')
+    await page.getByRole('button', { name: 'Открыть ассистента мастера' }).click()
+    await page.getByRole('button', { name: 'Кто сейчас свободен из электриков?' }).click()
+    await expect(page.getByText(/электромонтёров на смене|Свободных электромонтёров/)).toBeVisible()
+    await page.getByPlaceholder('Ваш вопрос').fill('Сформируй отчёт за неделю по участку обогащения')
+    await page.getByRole('button', { name: 'Спросить', exact: true }).click()
+    await expect(page.getByRole('button', { name: 'Открыть отчёт' })).toBeVisible()
+    await settle(page)
+    await page.screenshot({ path: `${SHOTS}/assistant.png` })
+    await page.getByRole('button', { name: 'Открыть отчёт' }).click()
+    await expect(page).toHaveURL(/\/panel\/reports\?kind=orders&period=week/)
+    await expect(page.getByText('Участок: Обогащение')).toBeVisible()
+  })
+
+  test('отчёт по исполнителю', async ({ page, request }) => {
+    await signIn(page, request, 'master1', '2222')
+    await page.goto('/panel/reports?kind=orders&period=month')
+    await page.getByLabel('Исполнитель').selectOption({ label: 'Ахметов Ерлан Каиртаевич' })
+    await expect(page.getByText('Исполнитель: Ахметов Е.')).toBeVisible()
+    await expect(page.getByText('Отклонено').first()).toBeVisible()
+    await settle(page)
+    await page.screenshot({ path: `${SHOTS}/reports-filtered.png` })
+  })
+})

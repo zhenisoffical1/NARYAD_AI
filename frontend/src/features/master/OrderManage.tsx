@@ -1,6 +1,7 @@
 import { type ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { EquipmentHistory } from '@/features/orders/EquipmentHistory'
 import { OrderHeader } from '@/features/orders/OrderHeader'
 import { ReasonSheet } from '@/features/orders/ReasonSheet'
 import { CANCEL_REASONS } from '@/features/orders/reasons'
@@ -102,6 +103,8 @@ export function OrderManageBody({ order }: { order: OrderDetail }) {
       <Panel title={t('worker.progress')}>
         <Timeline events={order.events} />
       </Panel>
+
+      <EquipmentHistory equipmentId={order.equipment.id} currentOrderId={order.id} />
     </div>
   )
 }

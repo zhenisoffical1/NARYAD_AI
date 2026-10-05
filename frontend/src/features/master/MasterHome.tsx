@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 
+import { AssistantButton } from '@/features/assistant/Assistant'
 import { NotificationsBell } from '@/features/orders/NotificationsBell'
 import { fetchOrders, orderKeys } from '@/shared/api/orders'
 import { fetchPeople, shiftKeys } from '@/shared/api/reference'
@@ -59,6 +60,7 @@ export function MasterHome() {
         subtitle={shiftLabel || user?.short_name}
         right={
           <>
+            <AssistantButton variant="phone" />
             <NotificationsBell />
             <button
               type="button"

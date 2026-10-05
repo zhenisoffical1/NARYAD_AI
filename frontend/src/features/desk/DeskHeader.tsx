@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { AssistantButton } from '@/features/assistant/Assistant'
 import { NotificationsBell } from '@/features/orders/NotificationsBell'
 import { setLanguage } from '@/i18n'
 import { cn } from '@/shared/lib/format'
@@ -35,6 +36,7 @@ export function DeskHeader({
         <div className="ml-auto flex items-center gap-1">
           <LiveDot withLabel />
           {actions}
+          <AssistantButton />
           <NotificationsBell />
           <span aria-hidden className="mx-2 h-8 w-px bg-white/25" />
           {user && <Initials name={user.short_name} size={34} />}

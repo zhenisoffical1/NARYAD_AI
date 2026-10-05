@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { EquipmentHistory } from '@/features/orders/EquipmentHistory'
 import { type AdminRecord, createAdminRecord, deleteAdminRecord, updateAdminRecord } from '@/shared/api/admin'
 import { cn } from '@/shared/lib/format'
 import { toast } from '@/shared/lib/toast'
@@ -118,6 +119,7 @@ export function RecordForm({
           />
         ))}
         {def.kind === 'equipment' && !isNew && <EquipmentQr record={record} />}
+        {def.kind === 'equipment' && !isNew && <EquipmentHistory equipmentId={record.id} />}
       </div>
     </Drawer>
   )
@@ -196,6 +198,7 @@ function Field({
       label={label}
       hint={hint}
       type={field.type === 'number' ? 'number' : 'text'}
+      step={field.type === 'number' ? 'any' : undefined}
       value={value === null || value === undefined ? '' : String(value)}
       disabled={def.kind === 'employees' && field.key === 'login' && !isNew}
       className={cn(field.key === 'inv_number' || field.key === 'code' ? 'cond font-semibold' : undefined)}

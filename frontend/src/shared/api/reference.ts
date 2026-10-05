@@ -3,12 +3,15 @@ import type {
   AppNotification,
   Brigade,
   Equipment,
+  EquipmentShort,
   FaultCode,
   Material,
   MyRating,
   NotificationFeed,
+  OrderListItem,
   PersonStatus,
   RatingReport,
+  RefShort,
   Section,
   ShiftSummary,
 } from './types'
@@ -33,6 +36,18 @@ export const fetchEquipmentByQr = (code: string) =>
 export const fetchFaultCodes = () => api<FaultCode[]>('/fault-codes')
 export const fetchMaterials = () => api<Material[]>('/materials')
 export const fetchBrigades = () => api<Brigade[]>('/brigades')
+
+export interface EquipmentHistoryData {
+  equipment: EquipmentShort
+  section: RefShort
+  orders_total: number
+  unplanned_total: number
+  downtime_minutes_total: number
+  orders: OrderListItem[]
+}
+
+export const fetchEquipmentHistory = (id: number) =>
+  api<EquipmentHistoryData>(`/equipment/${id}/history?limit=50`)
 
 /** Люди и счётчики смены меняются вместе с нарядами — живое событие обновляет их по 'shift'. */
 export const shiftKeys = {

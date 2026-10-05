@@ -122,6 +122,9 @@ export interface ReportQuery {
   dateFrom?: string
   dateTo?: string
   sectionId?: number | null
+  equipmentId?: number | null
+  employeeId?: number | null
+  brigadeId?: number | null
 }
 
 function reportParams(q: ReportQuery, format: 'json' | 'xlsx' | 'pdf'): string {
@@ -131,6 +134,9 @@ function reportParams(q: ReportQuery, format: 'json' | 'xlsx' | 'pdf'): string {
     params.set('date_to', q.dateTo)
   }
   if (q.sectionId) params.set('section_id', String(q.sectionId))
+  if (q.equipmentId) params.set('equipment_id', String(q.equipmentId))
+  if (q.employeeId) params.set('employee_id', String(q.employeeId))
+  if (q.brigadeId) params.set('brigade_id', String(q.brigadeId))
   return `/reports/${q.kind}?${params}`
 }
 

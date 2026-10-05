@@ -5,7 +5,7 @@ BACKEND = $(COMPOSE) exec backend
 # Одноразовый контейнер бэкенда: тесты и линтер не требуют ничего, кроме Docker
 BACKEND_RUN = $(COMPOSE) run --rm --no-deps backend
 
-.PHONY: up down logs ps migrate seed seed-check scene test test-backend test-frontend lint fmt ai-eval e2e
+.PHONY: up down logs ps migrate seed seed-check dataset scene test test-backend test-frontend lint fmt ai-eval e2e
 
 up:  ## Поднять всю систему
 	$(COMPOSE) up -d --build
@@ -27,6 +27,9 @@ seed:  ## Наполнить базу тестовыми данными (дет�
 
 seed-check:  ## Статистика данных и проверка заложенных закономерностей
 	$(BACKEND) python -m seed.check
+
+dataset:  ## Выгрузить тестовый набор данных в data/dataset (CSV)
+	cd backend && python -m seed.export
 
 scene:  ## Пересоздать только демо-сцену
 	$(BACKEND) python -m seed --scene-only

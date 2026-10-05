@@ -1,6 +1,7 @@
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router'
 
 import {
   downloadReport,
@@ -17,7 +18,7 @@ import { toast } from '@/shared/lib/toast'
 import { Button, Counter, CounterBoard, EmptyState, Icon, Skeleton, Tabs } from '@/shared/ui'
 
 import { DeskHeader, PeriodPicker } from './DeskHeader'
-import { SectionFilter } from './filters'
+import { ReportFilters, type ReportSlice } from './filters'
 
 const KINDS: ReportKind[] = ['orders', 'materials', 'downtime', 'rating']
 const PERIODS: ReportPeriod[] = ['shift', 'day', 'week', 'month', 'custom']
@@ -29,6 +30,10 @@ const PERIOD_KEY = {
   custom: 'periodCustom',
 } as const
 
+function pick<T extends string>(value: string | null, allowed: readonly T[], fallback: T): T {
+  return allowed.find((v) => v === value) ?? fallback
+}
+
 function isoDay(offset = 0): string {
   const d = new Date()
   d.setDate(d.getDate() + offset)
@@ -38,13 +43,29 @@ function isoDay(offset = 0): string {
 /** Отчёты с выгрузкой в Excel и PDF. На экране — те же цифры, что в файле. */
 export function ReportsPage() {
   const { t } = useTranslation()
-  const [kind, setKind] = useState<ReportKind>('orders')
-  const [period, setPeriod] = useState<ReportPeriod>('shift')
+  const [params] = useSearchParams()
+  const [kind, setKind] = useState<ReportKind>(() => pick(params.get('kind'), KINDS, 'orders'))
+  const [period, setPeriod] = useState<ReportPeriod>(() => pick(params.get('period'), PERIODS, 'shift'))
   const [dateFrom, setDateFrom] = useState(isoDay(-6))
   const [dateTo, setDateTo] = useState(isoDay())
-  const [section, setSection] = useState<number | null>(null)
+  const [slice, setSlice] = useState<ReportSlice>(() => ({
+    section: Number(params.get('section_id')) || null,
+    equipment: null,
+    employee: null,
+    brigade: null,
+  }))
 
-  const query: ReportQuery = { kind, period, dateFrom, dateTo, sectionId: kind === 'rating' ? null : section }
+  const sliced = kind !== 'rating'
+  const query: ReportQuery = {
+    kind,
+    period,
+    dateFrom,
+    dateTo,
+    sectionId: sliced ? slice.section : null,
+    equipmentId: sliced ? slice.equipment : null,
+    employeeId: sliced ? slice.employee : null,
+    brigadeId: sliced ? slice.brigade : null,
+  }
   const report = useQuery({
     queryKey: reportKeys.get(query),
     queryFn: () => fetchReport(query),
@@ -82,7 +103,7 @@ export function ReportsPage() {
               <DateField label={t('reports.to')} value={dateTo} onChange={setDateTo} />
             </>
           )}
-          {kind !== 'rating' && <SectionFilter value={section} onChange={setSection} />}
+          {sliced && <ReportFilters value={slice} onChange={setSlice} />}
           <div className="ml-auto flex gap-2">
             <Button
               variant="secondary"
@@ -139,8 +160,14 @@ function ReportView({ report }: { report: Report }) {
   const { t } = useTranslation()
   return (
     <>
+      {report.filters && (
+        <p className="flex items-center gap-2 text-small text-ink-2">
+          <Icon name="filter" size={16} className="text-accent" />
+          {report.filters}
+        </p>
+      )}
       {report.kpis.length > 0 && (
-        <CounterBoard columns={Math.min(report.kpis.length, 6)}>
+        <CounterBoard columns={Math.min(report.kpis.length, 7)}>
           {report.kpis.map((k) => (
             <Counter key={k.label} label={k.label} value={k.value} alert={k.tone === 'danger' && k.value !== '0'} />
           ))}

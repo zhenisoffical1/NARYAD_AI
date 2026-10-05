@@ -633,7 +633,13 @@ async def test_admin_fault_code_norm_hours(client: AsyncClient, team) -> None:
     )
     assert renamed.json()["norm_hours"] == "3.00", "без norm_hours норматив не трогаем"
 
-    files = {"file": ("codes.csv", "code;category;name;norm_hours\nТ-02;Э;Из 1С;2\n".encode(), "text/csv")}
+    files = {
+        "file": (
+            "codes.csv",
+            "code;category;name;norm_hours\nТ-02;Э;Из 1С;2\n".encode(),
+            "text/csv",
+        )
+    }
     imported = await client.post("/api/admin/fault-codes/import", files=files, headers=admin)
     assert imported.json() == {"created": 1, "updated": 0, "errors": []}
 
@@ -641,4 +647,3 @@ async def test_admin_fault_code_norm_hours(client: AsyncClient, team) -> None:
     by_code = {c["code"]: c for c in public}
     assert by_code["Т-01"]["norm_hours"] == "3.00"
     assert by_code["Т-02"]["norm_hours"] == "2.00"
-
