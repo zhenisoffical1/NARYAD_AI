@@ -1,1 +1,0 @@
-# NARYAD_AI
