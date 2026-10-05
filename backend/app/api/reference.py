@@ -28,8 +28,8 @@ from app.schemas.reference import (
     EquipmentOut,
     FaultCodeOut,
     MaterialOut,
-    NormMaterialOut,
     SectionOut,
+    fault_code_out,
 )
 from app.services import orders as order_svc
 from app.services.people import shift_people, shift_summary
@@ -153,22 +153,7 @@ async def fault_codes(session: AsyncSession = Depends(get_session)) -> list[Faul
             .selectinload(TimeNormMaterial.material)
         )
     )
-    result = []
-    for code in codes:
-        out = FaultCodeOut.model_validate(code)
-        if code.norm:
-            out.norm_hours = code.norm.norm_hours
-            out.norm_materials = [
-                NormMaterialOut(
-                    material_id=m.material_id,
-                    name=m.material.name,
-                    unit=m.material.unit,
-                    quantity=m.quantity,
-                )
-                for m in code.norm.materials
-            ]
-        result.append(out)
-    return result
+    return [fault_code_out(code) for code in codes]
 
 
 @router.get("/materials", response_model=list[MaterialOut], summary="Материалы и запчасти")

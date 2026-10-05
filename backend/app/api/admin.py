@@ -3,19 +3,35 @@
 import csv
 import io
 from dataclasses import dataclass
+from datetime import timedelta
 from typing import Any
 
 from fastapi import APIRouter, Depends, File, UploadFile
 from pydantic import BaseModel, ValidationError
-from sqlalchemy import select
+from sqlalchemy import Integer, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
+from app.config import settings
 from app.db import get_session
 from app.deps import require_role
 from app.errors import Conflict, Invalid, NotFound
-from app.models import Base, Brigade, Employee, Equipment, FaultCode, Material, Section
-from app.models.enums import Role
+from app.models import (
+    Base,
+    Brigade,
+    Employee,
+    Equipment,
+    FaultCode,
+    LlmCall,
+    Material,
+    Order,
+    Section,
+    TimeNorm,
+    TimeNormMaterial,
+)
+from app.models.base import utcnow
+from app.models.enums import ACTIVE_STATUSES, Role
 from app.schemas.reference import (
     BrigadeIn,
     BrigadeOut,
@@ -26,10 +42,13 @@ from app.schemas.reference import (
     FaultCodeIn,
     FaultCodeOut,
     ImportResult,
+    LlmCallOut,
     MaterialIn,
     MaterialOut,
     SectionIn,
     SectionOut,
+    SystemStatus,
+    fault_code_out,
 )
 from app.security import hash_pin
 
@@ -72,8 +91,38 @@ def _apply(obj: Any, data: dict[str, Any]) -> None:
         obj.pin_hash = hash_pin(pin)
 
 
+NORM = (
+    selectinload(FaultCode.norm)
+    .selectinload(TimeNorm.materials)
+    .selectinload(TimeNormMaterial.material)
+)
+
+
 def _out(kind: RefKind, obj: Any) -> dict[str, Any]:
+    if kind.model is FaultCode:
+        return fault_code_out(obj).model_dump(mode="json")
     return kind.schema_out.model_validate(obj).model_dump(mode="json")
+
+
+async def _get(session: AsyncSession, kind: RefKind, item_id: int) -> Any:
+    """Запись по id; у шифра — сразу с нормативом (ленивая загрузка в async недоступна)."""
+    stmt = select(kind.model).where(kind.model.id == item_id)  # type: ignore[attr-defined]
+    if kind.model is FaultCode:
+        stmt = stmt.options(NORM).execution_options(populate_existing=True)
+    return await session.scalar(stmt)
+
+
+async def _set_norm(session: AsyncSession, code: Any, data: dict[str, Any]) -> None:
+    """Норматив времени шифра живёт в time_norms: обновляем или создаём."""
+    hours = data.pop("norm_hours", None)
+    if hours is None:
+        return
+    if code.id is not None:
+        loaded = await _get(session, KINDS["fault-codes"], code.id)
+        if loaded is not None and loaded.norm is not None:
+            loaded.norm.norm_hours = hours
+            return
+    session.add(TimeNorm(fault_code=code, norm_hours=hours))
 
 
 async def _commit(session: AsyncSession) -> None:
@@ -87,12 +136,56 @@ async def _commit(session: AsyncSession) -> None:
         ) from exc
 
 
+@router.get("/system", response_model=SystemStatus, summary="Состояние системы")
+async def system_status(session: AsyncSession = Depends(get_session)) -> SystemStatus:
+    since = utcnow() - timedelta(hours=24)
+    calls_24h = (
+        await session.execute(
+            select(
+                func.count(), func.avg(LlmCall.latency_ms), func.sum(func.cast(LlmCall.ok, Integer))
+            ).where(LlmCall.created_at >= since)
+        )
+    ).one()
+    total, avg_latency, ok_count = calls_24h
+    recent = await session.scalars(select(LlmCall).order_by(LlmCall.created_at.desc()).limit(12))
+
+    async def count(stmt: Any) -> int:
+        return int(await session.scalar(stmt) or 0)
+
+    return SystemStatus(
+        llm_mode="mock" if settings.llm_mock else "anthropic",
+        llm_model=settings.llm_model,
+        llm_fast_model=settings.llm_fast_model,
+        telegram=bool(settings.telegram_bot_token),
+        telegram_bot=settings.telegram_bot_username,
+        demo_mode=settings.demo_mode,
+        employees_active=await count(
+            select(func.count()).select_from(Employee).where(Employee.is_active)
+        ),
+        employees_telegram=await count(
+            select(func.count()).select_from(Employee).where(Employee.telegram_chat_id.is_not(None))
+        ),
+        equipment=await count(select(func.count()).select_from(Equipment)),
+        orders_total=await count(select(func.count()).select_from(Order)),
+        orders_active=await count(
+            select(func.count()).select_from(Order).where(Order.status.in_(ACTIVE_STATUSES))
+        ),
+        llm_calls_24h=int(total or 0),
+        llm_ok_share=round(int(ok_count or 0) / total, 3) if total else None,
+        llm_avg_latency_ms=round(avg_latency) if avg_latency is not None else None,
+        llm_recent=[LlmCallOut.model_validate(c) for c in recent],
+    )
+
+
 @router.get("/{kind_name}", summary="Список записей справочника")
 async def list_items(
     kind_name: str, session: AsyncSession = Depends(get_session)
 ) -> list[dict[str, Any]]:
     kind = _kind(kind_name)
-    rows = await session.scalars(select(kind.model).order_by(getattr(kind.model, kind.order_by)))
+    stmt = select(kind.model).order_by(getattr(kind.model, kind.order_by))
+    if kind.model is FaultCode:
+        stmt = stmt.options(NORM)
+    rows = await session.scalars(stmt)
     return [_out(kind, r) for r in rows]
 
 
@@ -105,10 +198,12 @@ async def create_item(
     if kind.model is Employee and not data.get("pin"):
         raise Invalid("Задайте сотруднику ПИН из 4 цифр.")
     obj = kind.model()
+    norm = {"norm_hours": data.pop("norm_hours", None)} if kind.model is FaultCode else {}
     _apply(obj, data)
     session.add(obj)
+    await _set_norm(session, obj, norm)
     await _commit(session)
-    return _out(kind, obj)
+    return _out(kind, await _get(session, kind, obj.id))  # type: ignore[attr-defined]
 
 
 @router.patch("/{kind_name}/{item_id}", summary="Изменить запись")
@@ -119,14 +214,17 @@ async def update_item(
     session: AsyncSession = Depends(get_session),
 ) -> dict[str, Any]:
     kind = _kind(kind_name)
-    obj = await session.get(kind.model, item_id)
+    obj = await _get(session, kind, item_id)
     if obj is None:
         raise NotFound("Запись не найдена.")
     current = _out(kind, obj)
     data = _validate(kind, {**current, **body})
-    _apply(obj, {k: v for k, v in data.items() if k in body})
+    changed = {k: v for k, v in data.items() if k in body}
+    if kind.model is FaultCode:
+        await _set_norm(session, obj, changed)
+    _apply(obj, changed)
     await _commit(session)
-    return _out(kind, obj)
+    return _out(kind, await _get(session, kind, item_id))
 
 
 @router.delete("/{kind_name}/{item_id}", status_code=204, summary="Удалить запись")
@@ -205,16 +303,25 @@ async def import_csv(
             existing = await session.scalar(
                 select(kind.model).where(key_column == clean.get(kind.natural_key))
             )
+            if existing is not None and kind.model is FaultCode:
+                existing = await _get(session, kind, existing.id)  # type: ignore[attr-defined]
             if existing is not None:
                 merged = {**_out(kind, existing), **clean}
                 data = _validate(kind, merged)
-                _apply(existing, {k: v for k, v in data.items() if k in clean})
+                changed = {k: v for k, v in data.items() if k in clean}
+                if kind.model is FaultCode:
+                    await _set_norm(session, existing, changed)
+                _apply(existing, changed)
                 updated += 1
             else:
                 data = _validate(kind, clean)
                 obj = kind.model()
+                norm = (
+                    {"norm_hours": data.pop("norm_hours", None)} if kind.model is FaultCode else {}
+                )
                 _apply(obj, data)
                 session.add(obj)
+                await _set_norm(session, obj, norm)
                 created += 1
             await session.flush()
         except (Invalid, IntegrityError) as exc:

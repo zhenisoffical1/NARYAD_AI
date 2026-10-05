@@ -1,17 +1,21 @@
 """Сборка отчётов (ТЗ, раздел 7): по нарядам за период, по наряду, рейтинг, материалы, простои."""
 
 from collections import defaultdict
+from dataclasses import dataclass
 from decimal import Decimal
 from typing import Any
 
 from pydantic import BaseModel, Field
-from sqlalchemy import select
+from sqlalchemy import Select, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.errors import NotFound
 from app.models import (
     AiAssessment,
+    Brigade,
+    Employee,
+    Equipment,
     FaultCode,
     MaterialWriteoff,
     Order,
@@ -40,7 +44,30 @@ DONE = {S.DONE, S.AI_REVIEW, S.CLOSED}
 MATERIAL_WARN = 1.5
 
 
-async def _orders(session: AsyncSession, w: Window, section_id: int | None) -> list[Order]:
+@dataclass(frozen=True, slots=True)
+class ReportFilter:
+    """Срез отчёта: участок, оборудование, исполнитель, бригада (любые вместе)."""
+
+    section_id: int | None = None
+    equipment_id: int | None = None
+    employee_id: int | None = None
+    brigade_id: int | None = None
+
+
+def _where(stmt: Select[Any], f: ReportFilter) -> Select[Any]:
+    if f.section_id is not None:
+        stmt = stmt.where(Order.section_id == f.section_id)
+    if f.equipment_id is not None:
+        stmt = stmt.where(Order.equipment_id == f.equipment_id)
+    if f.employee_id is not None:
+        stmt = stmt.where(Order.assignee_id == f.employee_id)
+    if f.brigade_id is not None:
+        members = select(Employee.id).where(Employee.brigade_id == f.brigade_id)
+        stmt = stmt.where(or_(Order.brigade_id == f.brigade_id, Order.assignee_id.in_(members)))
+    return stmt
+
+
+async def _orders(session: AsyncSession, w: Window, f: ReportFilter) -> list[Order]:
     stmt = (
         select(Order)
         .where(Order.created_at >= w.start, Order.created_at < w.end)
@@ -53,16 +80,20 @@ async def _orders(session: AsyncSession, w: Window, section_id: int | None) -> l
         )
         .order_by(Order.number)
     )
-    if section_id is not None:
-        stmt = stmt.where(Order.section_id == section_id)
-    return list(await session.scalars(stmt))
+    return list(await session.scalars(_where(stmt, f)))
 
 
-async def _filters(session: AsyncSession, section_id: int | None) -> str | None:
-    if section_id is None:
-        return None
-    section = await session.get(Section, section_id)
-    return f"Участок: {section.name}" if section else None
+async def _filters(session: AsyncSession, f: ReportFilter) -> str | None:
+    parts: list[str] = []
+    if f.section_id is not None and (section := await session.get(Section, f.section_id)):
+        parts.append(f"Участок: {section.name}")
+    if f.equipment_id is not None and (eq := await session.get(Equipment, f.equipment_id)):
+        parts.append(f"Оборудование: {eq.inv_number} {eq.name}")
+    if f.employee_id is not None and (person := await session.get(Employee, f.employee_id)):
+        parts.append(f"Исполнитель: {person.short_name}")
+    if f.brigade_id is not None and (brigade := await session.get(Brigade, f.brigade_id)):
+        parts.append(f"Бригада: {brigade.name}")
+    return "; ".join(parts) or None
 
 
 def _overdue(o: Order) -> bool:
@@ -88,6 +119,8 @@ def _template_summary(data: dict[str, Any]) -> str:
     )
     if data["просрочено"]:
         text += f" Просрочено: {data['просрочено']}."
+    if data["отклонено"]:
+        text += f" Отклонено исполнителями: {data['отклонено']}."
     if data["возвраты"]:
         text += f" Возвращено на доработку: {data['возвраты']}."
     if data["простой_ч"]:
@@ -102,14 +135,15 @@ def _template_summary(data: dict[str, Any]) -> str:
     return text
 
 
-async def orders_report(session: AsyncSession, w: Window, section_id: int | None) -> Report:
-    orders = await _orders(session, w, section_id)
+async def orders_report(session: AsyncSession, w: Window, f: ReportFilter) -> Report:
+    orders = await _orders(session, w, f)
     assessments = await latest_assessments(session, [o.id for o in orders])
 
     done = [o for o in orders if o.status in DONE]
     closed = [o for o in orders if o.status == S.CLOSED]
     overdue = [o for o in orders if _overdue(o)]
     rework = [o for o in orders if had_rework(o)]
+    rejected = [o for o in orders if any(e.to_status == S.REJECTED for e in o.events)]
     active = [o for o in orders if o.status in DEADLINE_TRACKED_STATUSES]
     downtime: dict[str, int] = defaultdict(int)
     for o in orders:
@@ -166,6 +200,7 @@ async def orders_report(session: AsyncSession, w: Window, section_id: int | None
         "закрыто": len(closed),
         "просрочено": len(overdue),
         "возвраты": len(rework),
+        "отклонено": len(rejected),
         "простой_ч": round(total_downtime / 60, 1),
         "больше_всего_простоя": max(downtime, key=downtime.__getitem__) if downtime else None,
         "средняя_оценка_ии": avg_score,
@@ -185,11 +220,12 @@ async def orders_report(session: AsyncSession, w: Window, section_id: int | None
         title="Отчёт по нарядам",
         period_label=w.label,
         generated_at=utcnow(),
-        filters=await _filters(session, section_id),
+        filters=await _filters(session, f),
         kpis=[
             Kpi("Выдано", str(len(orders))),
             Kpi("Исполнено", str(len(done)), "ok"),
             Kpi("Просрочено", str(len(overdue)), "danger" if overdue else "default"),
+            Kpi("Отклонено", str(len(rejected)), "danger" if rejected else "default"),
             Kpi("На доработку", str(len(rework)), "danger" if rework else "default"),
             Kpi("Простой", hours(total_downtime), "danger" if total_downtime else "default"),
             Kpi("Средняя оценка ИИ", str(avg_score) if avg_score is not None else "—"),
@@ -403,7 +439,7 @@ async def rating_report(session: AsyncSession, w: Window) -> Report:
 # --- 4. Материалы с отклонениями от нормы ---------------------------------------------------
 
 
-async def materials_report(session: AsyncSession, w: Window, section_id: int | None) -> Report:
+async def materials_report(session: AsyncSession, w: Window, f: ReportFilter) -> Report:
     stmt = (
         select(Order)
         .where(Order.done_at >= w.start, Order.done_at < w.end, Order.fault_code_id.is_not(None))
@@ -417,9 +453,7 @@ async def materials_report(session: AsyncSession, w: Window, section_id: int | N
             .selectinload(TimeNormMaterial.material),
         )
     )
-    if section_id is not None:
-        stmt = stmt.where(Order.section_id == section_id)
-    orders = list(await session.scalars(stmt))
+    orders = list(await session.scalars(_where(stmt, f)))
 
     rows: list[dict[str, Any]] = []
     totals: dict[str, dict[str, Any]] = {}
@@ -476,7 +510,7 @@ async def materials_report(session: AsyncSession, w: Window, section_id: int | N
         title="Материалы: расход и отклонения от нормы",
         period_label=w.label,
         generated_at=utcnow(),
-        filters=await _filters(session, section_id),
+        filters=await _filters(session, f),
         kpis=[
             Kpi("Нарядов с материалами", str(sum(1 for o in orders if o.writeoffs))),
             Kpi("Списаний выше нормы ×1,5", str(len(rows)), "danger" if rows else "ok"),
@@ -516,8 +550,8 @@ async def materials_report(session: AsyncSession, w: Window, section_id: int | N
 # --- 5. Простои по оборудованию и шифрам -------------------------------------------------
 
 
-async def downtime_report(session: AsyncSession, w: Window, section_id: int | None) -> Report:
-    orders = [o for o in await _orders(session, w, section_id) if o.downtime_minutes]
+async def downtime_report(session: AsyncSession, w: Window, f: ReportFilter) -> Report:
+    orders = [o for o in await _orders(session, w, f) if o.downtime_minutes]
     by_equipment: dict[str, dict[str, Any]] = {}
     by_code: dict[str, dict[str, Any]] = {}
     for o in orders:
@@ -550,7 +584,7 @@ async def downtime_report(session: AsyncSession, w: Window, section_id: int | No
         title="Простои оборудования",
         period_label=w.label,
         generated_at=utcnow(),
-        filters=await _filters(session, section_id),
+        filters=await _filters(session, f),
         kpis=[
             Kpi("Простой всего", hours(total), "danger" if total else "ok"),
             Kpi("Случаев", str(len(orders))),

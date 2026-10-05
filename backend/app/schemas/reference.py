@@ -1,6 +1,8 @@
+from datetime import datetime
 from decimal import Decimal
+from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
 
 from app.models.enums import Criticality, Role, Shift
 from app.schemas.common import ORMModel
@@ -43,6 +45,8 @@ class FaultCodeIn(BaseModel):
     category: str = Field(min_length=1, max_length=2)
     name: str = Field(min_length=2, max_length=160)
     external_id: str | None = Field(default=None, max_length=64)
+    # Норматив времени на работу по шифру (справочник нормативов, ТЗ 5.4)
+    norm_hours: Decimal | None = Field(default=None, gt=0, le=1000)
 
 
 class NormMaterialOut(BaseModel):
@@ -56,6 +60,29 @@ class FaultCodeOut(ORMModel, FaultCodeIn):
     id: int
     norm_hours: Decimal | None = None
     norm_materials: list[NormMaterialOut] = []
+
+
+def fault_code_out(code: Any) -> FaultCodeOut:
+    """Шифр с нормативом; норматив и его материалы должны быть загружены (selectinload)."""
+    out = FaultCodeOut(
+        id=code.id,
+        code=code.code,
+        category=code.category,
+        name=code.name,
+        external_id=code.external_id,
+    )
+    if code.norm:
+        out.norm_hours = code.norm.norm_hours
+        out.norm_materials = [
+            NormMaterialOut(
+                material_id=m.material_id,
+                name=m.material.name,
+                unit=m.material.unit,
+                quantity=m.quantity,
+            )
+            for m in code.norm.materials
+        ]
+    return out
 
 
 class MaterialIn(BaseModel):
@@ -95,9 +122,45 @@ class EmployeeAdminOut(ORMModel):
     on_shift: bool
     is_active: bool
     external_id: str | None
+    telegram_chat_id: int | None = Field(default=None, exclude=True)
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def telegram_linked(self) -> bool:
+        return self.telegram_chat_id is not None
 
 
 class ImportResult(BaseModel):
     created: int
     updated: int
     errors: list[str]
+
+
+class LlmCallOut(ORMModel):
+    id: int
+    purpose: str
+    model: str
+    latency_ms: int
+    ok: bool
+    error: str | None
+    created_at: datetime
+
+
+class SystemStatus(BaseModel):
+    """Сводка для администратора: режимы, связь, объём данных, журнал вызовов модели."""
+
+    llm_mode: str  # mock | anthropic
+    llm_model: str
+    llm_fast_model: str
+    telegram: bool
+    telegram_bot: str | None
+    demo_mode: bool
+    employees_active: int
+    employees_telegram: int
+    equipment: int
+    orders_total: int
+    orders_active: int
+    llm_calls_24h: int
+    llm_ok_share: float | None
+    llm_avg_latency_ms: int | None
+    llm_recent: list[LlmCallOut]

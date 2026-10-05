@@ -580,3 +580,65 @@ async def test_unplanned_without_after_photo_goes_back_to_rework(
     detail = (await client.get(f"/api/orders/{oid}", headers=auth_header(master))).json()
     assert detail["status"] == "REWORK"
     assert "фото «после»" in detail["assessment"]["checks"][0]["detail"]
+
+
+async def test_admin_system_status_and_employee_flags(
+    client: AsyncClient, team, session: AsyncSession
+) -> None:
+    admin = auth_header(team["admin"])
+    team["worker"].telegram_chat_id = 777
+    await session.commit()
+
+    status = await client.get("/api/admin/system", headers=admin)
+    assert status.status_code == 200
+    body = status.json()
+    assert body["llm_mode"] in {"mock", "anthropic"}
+    assert body["employees_active"] >= 1
+    assert body["employees_telegram"] == 1
+
+    people = (await client.get("/api/admin/employees", headers=admin)).json()
+    worker = next(p for p in people if p["id"] == team["worker"].id)
+    assert worker["telegram_linked"] is True
+    assert "telegram_chat_id" not in worker and "pin_hash" not in worker
+
+    # Изменение сотрудника не требует передавать вычисляемые поля обратно
+    patched = await client.patch(
+        f"/api/admin/employees/{worker['id']}", json={"is_active": False}, headers=admin
+    )
+    assert patched.status_code == 200 and patched.json()["is_active"] is False
+
+    forbidden = await client.get("/api/admin/system", headers=auth_header(team["master"]))
+    assert forbidden.status_code == 403
+
+
+async def test_admin_fault_code_norm_hours(client: AsyncClient, team) -> None:
+    admin = auth_header(team["admin"])
+    created = await client.post(
+        "/api/admin/fault-codes",
+        json={"code": "Т-01", "category": "М", "name": "Тестовый шифр", "norm_hours": "1.5"},
+        headers=admin,
+    )
+    assert created.status_code == 201, created.text
+    code = created.json()
+    assert code["norm_hours"] == "1.50"
+
+    changed = await client.patch(
+        f"/api/admin/fault-codes/{code['id']}", json={"norm_hours": 3}, headers=admin
+    )
+    assert changed.status_code == 200, changed.text
+    assert changed.json()["norm_hours"] == "3.00"
+
+    renamed = await client.patch(
+        f"/api/admin/fault-codes/{code['id']}", json={"name": "Другое название"}, headers=admin
+    )
+    assert renamed.json()["norm_hours"] == "3.00", "без norm_hours норматив не трогаем"
+
+    files = {"file": ("codes.csv", "code;category;name;norm_hours\nТ-02;Э;Из 1С;2\n".encode(), "text/csv")}
+    imported = await client.post("/api/admin/fault-codes/import", files=files, headers=admin)
+    assert imported.json() == {"created": 1, "updated": 0, "errors": []}
+
+    public = (await client.get("/api/fault-codes", headers=admin)).json()
+    by_code = {c["code"]: c for c in public}
+    assert by_code["Т-01"]["norm_hours"] == "3.00"
+    assert by_code["Т-02"]["norm_hours"] == "2.00"
+

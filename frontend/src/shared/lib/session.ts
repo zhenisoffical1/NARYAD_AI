@@ -39,3 +39,17 @@ export function homeFor(role: Role): string {
       return '/admin'
   }
 }
+
+const AREAS: { prefix: string; roles: Role[] }[] = [
+  { prefix: '/w', roles: ['worker'] },
+  { prefix: '/m', roles: ['master', 'admin'] },
+  { prefix: '/panel', roles: ['master', 'boss', 'admin'] },
+  { prefix: '/boss', roles: ['boss', 'admin'] },
+  { prefix: '/admin', roles: ['admin'] },
+]
+
+/** Можно ли роли открыть адрес — чтобы после входа не вести человека в чужой раздел. */
+export function canOpen(role: Role, path: string): boolean {
+  const area = AREAS.find((a) => path === a.prefix || path.startsWith(`${a.prefix}/`) || path.startsWith(`${a.prefix}?`))
+  return area ? area.roles.includes(role) : false
+}

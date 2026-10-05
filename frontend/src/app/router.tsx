@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router'
 
+import { AdminPage } from '@/features/admin/AdminPage'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { DemoEnterPage } from '@/features/demo/DemoEnterPage'
 import { DemoPage } from '@/features/demo/DemoPage'
@@ -23,7 +24,7 @@ import { WorkerOrderPage } from '@/features/worker/WorkerOrderPage'
 import { WorkerShell } from '@/features/worker/WorkerShell'
 
 import { RequireRole } from './RequireRole'
-import { HomeRedirect, Screen } from './RouteScreens'
+import { HomeRedirect } from './RouteScreens'
 import { NotFoundScreen } from './SystemScreens'
 
 export const router = createBrowserRouter([
@@ -78,7 +79,7 @@ export const router = createBrowserRouter([
   },
   {
     element: <RequireRole roles={['admin']} />,
-    children: [{ path: '/admin/*', element: <Screen name="admin" /> }],
+    children: [{ element: <DeskShell />, children: [{ path: '/admin', element: <AdminPage /> }] }],
   },
   { path: '*', element: <NotFoundScreen /> },
 ])

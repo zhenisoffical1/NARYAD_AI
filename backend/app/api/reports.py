@@ -54,19 +54,23 @@ async def period_report(
     date_from: date | None = None,
     date_to: date | None = None,
     section_id: int | None = None,
+    equipment_id: int | None = None,
+    employee_id: int | None = None,
+    brigade_id: int | None = None,
     format: Format = Query(default="json"),
     _user: Employee = Depends(STAFF),
     session: AsyncSession = Depends(get_session),
 ) -> Response:
     w = window(period, date_from, date_to)
+    f = builders.ReportFilter(section_id, equipment_id, employee_id, brigade_id)
     if kind == "orders":
-        report = await builders.orders_report(session, w, section_id)
+        report = await builders.orders_report(session, w, f)
     elif kind == "rating":
         report = await builders.rating_report(session, w)
     elif kind == "materials":
-        report = await builders.materials_report(session, w, section_id)
+        report = await builders.materials_report(session, w, f)
     else:
-        report = await builders.downtime_report(session, w, section_id)
+        report = await builders.downtime_report(session, w, f)
     stamp = w.start.strftime("%Y-%m-%d")
     return _respond(report, format, f"НарядAI_{report.title.split(':')[0]}_{stamp}")
 

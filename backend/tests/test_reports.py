@@ -8,7 +8,7 @@ from openpyxl import load_workbook
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Order
+from app.models import Employee, Order
 from app.models.enums import OrderStatus, Role
 from app.services.reports import builders
 from app.services.reports.model import window
@@ -46,7 +46,7 @@ async def test_each_report_as_json_and_excel(client: AsyncClient, boss, kind: st
 
 
 async def test_orders_report_summary_and_kpis(session: AsyncSession, boss) -> None:  # type: ignore[no-untyped-def]
-    report = await builders.orders_report(session, window("month"), None)
+    report = await builders.orders_report(session, window("month"), builders.ReportFilter())
     labels = [k.label for k in report.kpis]
     assert labels[:3] == ["Выдано", "Исполнено", "Просрочено"]
     assert report.summary and report.summary.startswith("Выдано нарядов:")
@@ -54,7 +54,7 @@ async def test_orders_report_summary_and_kpis(session: AsyncSession, boss) -> No
 
 
 async def test_materials_report_shows_overuse_with_norm(session: AsyncSession, boss) -> None:  # type: ignore[no-untyped-def]
-    report = await builders.materials_report(session, window("month"), None)
+    report = await builders.materials_report(session, window("month"), builders.ReportFilter())
     over = report.tables[0].rows
     assert over, "в сиде заложен перерасход — он должен попасть в отчёт"
     top = over[0]
@@ -62,7 +62,7 @@ async def test_materials_report_shows_overuse_with_norm(session: AsyncSession, b
 
 
 async def test_pdf_template_renders_cyrillic_and_logo(session: AsyncSession, boss) -> None:  # type: ignore[no-untyped-def]
-    report = await builders.downtime_report(session, window("month"), None)
+    report = await builders.downtime_report(session, window("month"), builders.ReportFilter())
     html = render_html(report)
     assert "Простои оборудования" in html and "km-logo-white.png" in html
     assert "counter(pages)" in html
@@ -120,3 +120,28 @@ async def test_boss_dashboard(client: AsyncClient, boss) -> None:  # type: ignor
     assert d["top_equipment"][0]["name"] == "Конвейер К-3"
     assert len(d["best_workers"]) == 5
     assert d["reaction_minutes"] is not None and d["completion_hours"] is not None
+
+
+async def test_report_filters_by_employee_and_brigade(session: AsyncSession, boss) -> None:  # type: ignore[no-untyped-def]
+    everything = await builders.orders_report(session, window("month"), builders.ReportFilter())
+    assert "Отклонено" in [k.label for k in everything.kpis]
+
+    some = await session.scalar(
+        select(Order).where(Order.assignee_id.is_not(None)).order_by(Order.created_at.desc())
+    )
+    assert some is not None and some.assignee_id is not None
+    mine = await builders.orders_report(
+        session, window("month"), builders.ReportFilter(employee_id=some.assignee_id)
+    )
+    rows = mine.tables[0].rows
+    assert rows and len(rows) < len(everything.tables[0].rows)
+    assert {r["assignee"] for r in rows} == {rows[0]["assignee"]}
+    assert mine.filters and mine.filters.startswith("Исполнитель:")
+
+    person = await session.get(Employee, some.assignee_id)
+    assert person is not None and person.brigade_id is not None
+    brigade = await builders.orders_report(
+        session, window("month"), builders.ReportFilter(brigade_id=person.brigade_id)
+    )
+    assert len(rows) <= len(brigade.tables[0].rows) < len(everything.tables[0].rows)
+    assert brigade.filters and "Бригада:" in brigade.filters

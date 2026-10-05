@@ -1,10 +1,8 @@
 import { Navigate, Outlet, useLocation } from 'react-router'
 
 import type { Role } from '@/shared/api/types'
-import { useSession } from '@/shared/lib/session'
+import { homeFor, useSession } from '@/shared/lib/session'
 import { useLiveEvents } from '@/shared/lib/useLiveEvents'
-
-import { ForbiddenScreen } from './SystemScreens'
 
 /** Пускает только указанные роли. Та же проверка повторяется на сервере (require_role). */
 export function RequireRole({ roles }: { roles: Role[] }) {
@@ -16,8 +14,9 @@ export function RequireRole({ roles }: { roles: Role[] }) {
     const next = encodeURIComponent(location.pathname + location.search)
     return <Navigate to={`/login?next=${next}`} replace />
   }
+  // Чужой раздел (старая ссылка, адрес из прошлой сессии) — сразу на свой главный экран
   if (!roles.includes(user.role)) {
-    return <ForbiddenScreen />
+    return <Navigate to={homeFor(user.role)} replace />
   }
   return <Outlet />
 }

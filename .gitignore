@@ -23,6 +23,8 @@ docs/screenshots/dev-ui-mobile-*.png
 .env
 *.db
 *.db-journal
+*.db-wal
+*.db-shm
 media/
 backend/media/
 

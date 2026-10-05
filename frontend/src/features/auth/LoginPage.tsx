@@ -5,7 +5,7 @@ import { Navigate, useNavigate, useSearchParams } from 'react-router'
 
 import { setLanguage } from '@/i18n'
 import { login } from '@/shared/api/auth'
-import { homeFor, useSession } from '@/shared/lib/session'
+import { canOpen, homeFor, useSession } from '@/shared/lib/session'
 import { PinPad, TextField } from '@/shared/ui'
 
 const PIN_LENGTH = 4
@@ -24,7 +24,8 @@ export function LoginPage() {
     onSuccess: (data) => {
       navigator.vibrate?.(30)
       signIn(data.access_token, data.user)
-      navigate(params.get('next') ?? homeFor(data.user.role), { replace: true })
+      const next = params.get('next')
+      navigate(next && canOpen(data.user.role, next) ? next : homeFor(data.user.role), { replace: true })
     },
     onError: () => {
       navigator.vibrate?.([40, 60, 40])

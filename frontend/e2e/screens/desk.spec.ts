@@ -1,7 +1,7 @@
 import { type APIRequestContext, expect, type Page, test } from '@playwright/test'
 
 /**
- * Десктопные экраны мастера и руководителя: обзор, аналитика, отчёты, рейтинг.
+ * Десктопные экраны мастера, руководителя и администратора: обзор, аналитика, отчёты, рейтинг, справочники.
  * Нужен бэкенд с `python -m seed`. Скриншоты — в docs/screenshots.
  */
 
@@ -15,6 +15,7 @@ async function signIn(page: Page, request: APIRequestContext, login: string, pin
     localStorage.setItem('naryad.session', JSON.stringify({ state: session, version: 0 }))
     localStorage.setItem('naryad.theme', 'light')
   }, { token: body.access_token, user: body.user })
+  return body.access_token
 }
 
 async function settle(page: Page) {
@@ -68,5 +69,49 @@ test.describe('рабочие места на компьютере', () => {
     await expect(page.getByText('Бригады')).toBeVisible()
     await settle(page)
     await page.screenshot({ path: `${SHOTS}/rating-desk.png`, fullPage: true })
+  })
+
+  test('администратор: сотрудники, оборудование, система', async ({ page, request }) => {
+    const token = await signIn(page, request, 'admin', '0000')
+    await page.goto('/admin')
+    await expect(page.getByRole('heading', { name: 'Администрирование' })).toBeVisible()
+    await expect(page.getByText('Ахметов Ерлан Каиртаевич')).toBeVisible()
+    await settle(page)
+    await page.screenshot({ path: `${SHOTS}/admin-employees.png` })
+
+    // Новый сотрудник: логин уникальный на каждый прогон, затем отключаем его
+    const login = `test${Date.now() % 100000}`
+    await page.getByRole('button', { name: 'Добавить сотрудника' }).click()
+    await page.getByLabel('ФИО *').fill('Тестов Тест Тестович')
+    await page.getByLabel('Логин *').fill(login)
+    await page.getByLabel('ПИН *').fill('4321')
+    await page.screenshot({ path: `${SHOTS}/admin-new.png` })
+    await page.getByRole('button', { name: 'Добавить', exact: true }).click()
+    await expect(page.getByText('Запись добавлена')).toBeVisible()
+    await page.getByPlaceholder('Фамилия, логин или специальность').fill(login)
+    await page.getByText('Тестов Тест Тестович').click()
+    await page.getByRole('switch', { name: /Доступ к системе/ }).click()
+    await page.getByRole('button', { name: 'Сохранить' }).click()
+    await expect(page.getByText('отключён')).toBeVisible()
+    const auth = { Authorization: `Bearer ${token}` }
+    const people = (await (await request.get('/api/admin/employees', { headers: auth })).json()) as {
+      id: number
+      login: string
+    }[]
+    const created = people.find((p) => p.login === login)
+    expect(created).toBeTruthy()
+    if (created) await request.delete(`/api/admin/employees/${created.id}`, { headers: auth })
+
+    await page.getByRole('tab', { name: 'Оборудование' }).click()
+    await page.getByText('Конвейер К-3').first().click()
+    await expect(page.getByRole('img', { name: /QR-код оборудования/ })).toBeVisible()
+    await settle(page)
+    await page.screenshot({ path: `${SHOTS}/admin-equipment.png` })
+    await page.keyboard.press('Escape')
+
+    await page.getByRole('tab', { name: 'Система' }).click()
+    await expect(page.getByText('Журнал вызовов модели')).toBeVisible()
+    await settle(page)
+    await page.screenshot({ path: `${SHOTS}/admin-system.png`, fullPage: true })
   })
 })
