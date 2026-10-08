@@ -9,10 +9,10 @@
   `settings.llm_backend`. Обезличивание, схема, повтор и журнал одинаковы для обоих.
 """
 
-import asyncio
 import hashlib
 import json
 import logging
+import re
 import time
 from functools import cache
 from pathlib import Path
@@ -169,6 +169,24 @@ async def ask_json[T: BaseModel](
 GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 # Если API не принял JSON-схему в generationConfig — схема уходит текстом в инструкцию
 _gemini_schema_in_prompt = False
+# Лимит бесплатного тарифа: модель → момент (time.monotonic), до которого её не вызываем
+_gemini_paused_until: dict[str, float] = {}
+QUOTA_PAUSE_SECONDS = 30.0
+
+
+def _gemini_paused(model: str) -> bool:
+    return _gemini_paused_until.get(model, 0.0) > time.monotonic()
+
+
+def _pause_after_quota(model: str, data: dict[str, Any]) -> None:
+    """429: Google называет, сколько ждать (RetryInfo.retryDelay «37s»). До тех пор — сразу правила,
+    без ожидания: мастер получает ответ мгновенно, а модель возвращается сама."""
+    delay = QUOTA_PAUSE_SECONDS
+    for detail in (data.get("error") or {}).get("details") or []:
+        found = re.fullmatch(r"(\d+(?:\.\d+)?)s", str(detail.get("retryDelay", "")))
+        if found:
+            delay = min(float(found.group(1)) + 1, 300.0)
+    _gemini_paused_until[model] = time.monotonic() + delay
 
 
 def _inline_refs(schema: dict[str, Any]) -> dict[str, Any]:
@@ -263,11 +281,13 @@ async def _ask_gemini[T: BaseModel](
 ) -> T | None:
     global _gemini_schema_in_prompt
     model = settings.active_model(fast)
+    if _gemini_paused(model):
+        return None
     schema = _inline_refs(strict_schema(output))
     p_hash = _prompt_hash(system, content)
 
     attempt = 0
-    rate_limited = schema_fallback = False
+    schema_fallback = False
     while attempt < ATTEMPTS:
         attempt += 1
         started = time.monotonic()
@@ -288,12 +308,9 @@ async def _ask_gemini[T: BaseModel](
                 _gemini_schema_in_prompt = schema_fallback = True
                 attempt -= 1
                 continue
-            if status == 429 and not rate_limited:
-                # Бесплатный лимит запросов в минуту — одна пауза и повтор, дальше правила
-                rate_limited = True
-                await asyncio.sleep(5)
-                attempt -= 1
-                continue
+            if status == 429:
+                _pause_after_quota(model, data)
+                return None
             log.warning("Gemini %s: ошибка API %s", purpose, status)
             return None
 
@@ -329,8 +346,10 @@ async def gemini_generate(
     if settings.llm_backend != "gemini":
         return None
     model = settings.active_model(fast)
+    if _gemini_paused(model):
+        return None
     p_hash = hashlib.sha256(json.dumps(body, ensure_ascii=False)[:20000].encode()).hexdigest()
-    for attempt in (1, 2):
+    for _attempt in (1, 2):
         started = time.monotonic()
         try:
             status, data = await _gemini_post(model, body, settings.assistant_timeout_seconds)
@@ -347,9 +366,9 @@ async def gemini_generate(
             return data
         message = str((data.get("error") or {}).get("message", ""))[:300]
         await _log_call(purpose, model, started, p_hash, ok=False, error=f"{status}: {message}")
-        if status == 429 and attempt == 1:
-            await asyncio.sleep(5)
-            continue
+        if status == 429:
+            _pause_after_quota(model, data)
+            return None
         log.warning("Gemini %s: ошибка API %s", purpose, status)
         return None
     return None

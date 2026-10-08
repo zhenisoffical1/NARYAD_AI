@@ -353,7 +353,7 @@ class Toolbox:
         }
 
     async def t_analytics(self, question: str = "") -> Any:
-        answer = await ask_analytics(self.session, question or "проблемы за месяц")
+        answer = await ask_analytics(self.session, question or "проблемы за месяц", llm=False)
         return {
             "охват": answer.scope_label,
             "находки": [

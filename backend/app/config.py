@@ -64,7 +64,7 @@ class Settings(BaseSettings):
     # Gemini API — бесплатный ключ в Google AI Studio (aistudio.google.com/apikey)
     gemini_api_key: str | None = None
     gemini_model: str = "gemini-3.5-flash"
-    gemini_fast_model: str = "gemini-3.5-flash"
+    gemini_fast_model: str = "gemini-3.5-flash-lite"
     # Проверка наряда должна уложиться в 15 с: на один вызов — не больше 12 с, при сбое — правила
     llm_timeout_seconds: float = 12
     # Ассистент — живой диалог, ему можно думать дольше, чем проверке наряда

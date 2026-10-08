@@ -154,22 +154,31 @@ def rule_plan(question: str, sections: list[str], equipment: list[str]) -> Plan:
     return Plan(days=days, section=section, equipment=found, kinds=kinds)
 
 
-async def ask(session: AsyncSession, question: str) -> Answer:
+async def ask(session: AsyncSession, question: str, *, llm: bool = True) -> Answer:
+    """llm=False — без вызовов модели: план по словам, выводы правилами (инструмент ассистента)."""
     sections = {s.name: s.id for s in await session.scalars(select(Section))}
     equipment = {e.name: e.id for e in await session.scalars(select(Equipment))}
 
-    plan = await ask_json(
-        "analytics_plan",
-        Plan,
-        system=prompt("analytics_plan"),
-        content=[
-            text_block(
-                facts_json(
-                    {"вопрос": question, "участки": list(sections), "оборудование": list(equipment)}
+    plan = (
+        None
+        if not llm
+        else await ask_json(
+            "analytics_plan",
+            Plan,
+            system=prompt("analytics_plan"),
+            content=[
+                text_block(
+                    facts_json(
+                        {
+                            "вопрос": question,
+                            "участки": list(sections),
+                            "оборудование": list(equipment),
+                        }
+                    )
                 )
-            )
-        ],
-        fast=True,
+            ],
+            fast=True,
+        )
     )
     source = "llm" if plan is not None else "rules"
     if (
@@ -191,7 +200,11 @@ async def ask(session: AsyncSession, question: str) -> Answer:
         findings = [f for f in findings if f.kind in kinds]
 
     where = plan.equipment or (f"участок «{plan.section}»" if plan.section else "всё предприятие")
-    items = await explain(findings)
+    items = (
+        await explain(findings)
+        if llm
+        else [Explained(f, f.facts, f.recommendation, "rules") for f in findings]
+    )
     return Answer(
         question=question,
         scope_label=f"{where}, {plan.days} дн.",

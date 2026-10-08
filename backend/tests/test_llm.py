@@ -252,11 +252,7 @@ def fake_gemini(monkeypatch: pytest.MonkeyPatch) -> Callable[..., FakeGemini]:
     monkeypatch.setattr(settings, "anthropic_api_key", "")
     monkeypatch.setattr(settings, "gemini_api_key", "test-gemini-key")
     monkeypatch.setattr(gateway, "_gemini_schema_in_prompt", False)
-
-    async def no_sleep(_seconds: float) -> None:
-        return None
-
-    monkeypatch.setattr(gateway.asyncio, "sleep", no_sleep)
+    monkeypatch.setattr(gateway, "_gemini_paused_until", {})
 
     def install(*replies: tuple[int, dict[str, Any]]) -> FakeGemini:
         fake = FakeGemini(*replies)
@@ -315,15 +311,25 @@ async def test_gemini_schema_rejected_goes_into_instruction(
     assert [c.ok for c in await _calls(session)] == [False, True]
 
 
-async def test_gemini_rate_limit_waits_once_then_rules(
+async def test_gemini_quota_pauses_model_without_waiting(
     session: AsyncSession, fake_gemini: Callable[..., FakeGemini]
 ) -> None:
-    limit = (429, {"error": {"message": "Resource exhausted"}})
-    fake_gemini(limit, _gemini_ok(GOOD))
-    assert await ask_json("works_match", WorksMatchOut, system="s", content=[]) is not None
-
-    fake_gemini(limit, limit)
+    """429 — сразу правила и пауза на время из ответа Google; в паузе модель не вызывается."""
+    limit = (
+        429,
+        {"error": {"message": "quota", "details": [{"retryDelay": "37s"}]}},
+    )
+    fake = fake_gemini(limit)
     assert await ask_json("works_match", WorksMatchOut, system="s", content=[]) is None
+    assert gateway._gemini_paused(settings.gemini_model)
+    assert not gateway._gemini_paused(settings.gemini_fast_model), "у lite-модели свой лимит"
+
+    assert await ask_json("works_match", WorksMatchOut, system="s", content=[]) is None
+    assert len(fake.bodies) == 1, "в паузе — без запроса к API"
+
+    gateway._gemini_paused_until.clear()
+    fake_gemini(_gemini_ok(GOOD))
+    assert await ask_json("works_match", WorksMatchOut, system="s", content=[]) is not None
 
 
 async def test_gemini_blocked_or_invalid_falls_back(
