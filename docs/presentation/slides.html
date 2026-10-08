@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><title>НарядAI — ZHETEL</title>
+<link rel="stylesheet" href="../../frontend/node_modules/@fontsource/ibm-plex-sans/cyrillic-400.css">
+<link rel="stylesheet" href="../../frontend/node_modules/@fontsource/ibm-plex-sans/cyrillic-600.css">
+<link rel="stylesheet" href="../../frontend/node_modules/@fontsource/ibm-plex-sans/cyrillic-700.css">
+<link rel="stylesheet" href="../../frontend/node_modules/@fontsource/ibm-plex-sans/latin-400.css">
+<link rel="stylesheet" href="../../frontend/node_modules/@fontsource/ibm-plex-sans/latin-600.css">
+<link rel="stylesheet" href="../../frontend/node_modules/@fontsource/ibm-plex-sans/latin-700.css">
+<style>
+@page{size:1920px 1080px;margin:0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans',sans-serif;color:#172230;background:#F3F5F8;font-variant-numeric:tabular-nums}
+.s{width:1920px;height:1080px;position:relative;overflow:hidden;page-break-after:always;background:#F3F5F8;padding:90px 110px 80px}
+.bar{position:absolute;left:0;top:0;right:0;height:14px;background:linear-gradient(90deg,#0B3F8C,#1660C9,#0E97A6)}
+.foot{position:absolute;left:110px;right:110px;bottom:36px;display:flex;justify-content:space-between;font-size:20px;color:#5A6878}
+.foot img{height:34px}
+h1{font-size:76px;font-weight:700;line-height:1.05;letter-spacing:-1px}
+h2{font-size:58px;font-weight:700;line-height:1.1;margin-bottom:40px;letter-spacing:-.5px}
+.k{font-size:24px;font-weight:600;color:#0E97A6;margin-bottom:14px}
+p,li{font-size:28px;line-height:1.45}
+ul{list-style:none}
+li{padding-left:34px;position:relative;margin-bottom:16px}
+li:before{content:'';position:absolute;left:0;top:15px;width:16px;height:16px;background:#0B3F8C;border-radius:3px}
+.g{display:grid;gap:28px}
+.c{background:#fff;border-radius:14px;padding:32px 34px;border:1px solid #DDE3EA}
+.c h3{font-size:30px;font-weight:700;margin-bottom:12px}
+.c p{font-size:23px;color:#33414F}
+.num{font-size:84px;font-weight:700;line-height:1;color:#0B3F8C}
+.shot{border-radius:12px;border:1px solid #CFD7E0;box-shadow:0 18px 40px rgba(11,63,140,.16);display:block}
+.tag{display:inline-block;font-size:20px;font-weight:600;padding:6px 14px;border-radius:6px;margin-right:8px}
+.grad{background:linear-gradient(120deg,#0B3F8C 0%,#1660C9 55%,#0E97A6 100%);color:#fff}
+.grad .foot{color:#CFE3F5}
+.alarm{background:repeating-linear-gradient(135deg,#C8281C 0 22px,#fff 22px 44px)}
+table{border-collapse:collapse;width:100%;font-size:25px}
+td,th{padding:16px 18px;border-bottom:1px solid #DDE3EA;text-align:left}
+th{color:#5A6878;font-weight:600;font-size:21px}
+td b{color:#0B3F8C}
+</style></head><body>
+
+<!-- 1 -->
+<section class="s grad" style="padding:110px 130px">
+  <img src="../../frontend/public/brand/km-logo-white.png" style="height:96px">
+  <div style="margin-top:150px">
+    <div style="font-size:30px;font-weight:600;color:#BFE9EE;margin-bottom:22px">Кейс 1 · Qostanai AI Industry Hackathon 2026</div>
+    <h1 style="font-size:132px">НарядAI</h1>
+    <p style="font-size:44px;margin-top:26px;max-width:1400px">Интеллектуальная система выдачи и контроля нарядов.<br>Наряд выдан — ИИ на контроле.</p>
+  </div>
+  <div style="position:absolute;left:130px;bottom:100px;font-size:34px;font-weight:700">Команда ZHETEL</div>
+  <div style="position:absolute;right:130px;bottom:100px;font-size:26px;color:#CFE3F5">для АО «Костанайские Минералы»</div>
+</section>
+
+<!-- 2 -->
+<section class="s"><div class="bar"></div>
+  <div class="k">Проблема</div>
+  <h2>Наряды живут на бумаге и в рации — контроль теряется</h2>
+  <div class="g" style="grid-template-columns:1fr 1fr 1fr;margin-top:50px">
+    <div class="c"><h3>Не видно статуса</h3><p>Мастер узнаёт, что наряд не принят или просрочен, только когда оборудование уже простаивает.</p></div>
+    <div class="c"><h3>Качество не проверить</h3><p>Закрытие «на слово»: нет фото, перерасход материалов и работы не по проблеме никто не сверяет.</p></div>
+    <div class="c"><h3>История не работает</h3><p>Повторные поломки, слабые ППР и проблемные смены прячутся в журналах — их некому анализировать.</p></div>
+  </div>
+  <div class="c alarm" style="margin-top:50px;padding:0"><div style="background:#fff;margin:0 0 0 70px;padding:30px 36px;border-radius:0 14px 14px 0"><p style="font-size:30px"><b>Итог:</b> лишний простой, повторные ремонты и рейтинг исполнителей «по ощущениям».</p></div></div>
+  <div class="foot"><span>ZHETEL · НарядAI</span><img src="../../frontend/public/brand/km-logo.png"></div>
+</section>
+
+<!-- 3 -->
+<section class="s"><div class="bar"></div>
+  <div class="k">Решение</div>
+  <h2>Одна система для мастера, исполнителя и руководителя</h2>
+  <div style="display:grid;grid-template-columns:1fr 1.15fr;gap:60px">
+    <ul style="margin-top:10px">
+      <li><b>Мастер</b> выдаёт наряд с телефона за 5 нажатий (ТЗ ≤ 6) — ИИ сразу предлагает свободного исполнителя.</li>
+      <li><b>Исполнитель</b> получает наряд в Telegram (@naryadai_km_bot) и PWA, ведёт по статусам крупными кнопками для перчаток, закрывает с фото «после».</li>
+      <li><b>ИИ</b> контролирует сроки, проверяет закрытие, ставит оценку, считает рейтинг, ищет аномалии.</li>
+      <li><b>Руководитель</b> видит дашборд, аналитику, отчёты в PDF и Excel.</li>
+      <li>Финальное слово всегда за мастером.</li>
+    </ul>
+    <img class="shot" src="../screenshots/panel.png" style="width:100%">
+  </div>
+  <div class="foot"><span>ZHETEL · НарядAI</span><img src="../../frontend/public/brand/km-logo.png"></div>
+</section>
+
+<!-- 4 -->
+<section class="s"><div class="bar"></div>
+  <div class="k">Демо-экраны</div>
+  <h2>Как это выглядит в работе</h2>
+  <div style="display:flex;gap:36px;align-items:flex-start">
+    <div><img class="shot" src="../screenshots/master-home.png" style="height:640px"><p style="font-size:22px;margin-top:14px">Мастер · телефон</p></div>
+    <div><img class="shot" src="../screenshots/worker-order.png" style="height:640px"><p style="font-size:22px;margin-top:14px">Исполнитель · наряд</p></div>
+    <div><img class="shot" src="../screenshots/emergency-mobile.png" style="height:640px"><p style="font-size:22px;margin-top:14px">Аварийный наряд</p></div>
+    <div style="flex:1"><img class="shot" src="../screenshots/boss.png" style="width:100%"><p style="font-size:22px;margin-top:14px">Руководитель · дашборд</p></div>
+  </div>
+  <div class="foot"><span>ZHETEL · НарядAI</span><img src="../../frontend/public/brand/km-logo.png"></div>
+</section>
+
+<!-- 5 -->
+<section class="s"><div class="bar"></div>
+  <div class="k">Архитектура</div>
+  <h2>Надёжная основа, готовая к интеграции</h2>
+  <div class="g" style="grid-template-columns:repeat(4,1fr)">
+    <div class="c"><h3>Клиенты</h3><p>React + TypeScript PWA (офлайн-очередь), панель мастера, Telegram-бот на aiogram. Русский и казахский.</p></div>
+    <div class="c"><h3>API</h3><p>FastAPI, REST в OpenAPI (/docs), WebSocket — статус у всех за 0,47 с. Машина статусов — одно место смены статуса.</p></div>
+    <div class="c"><h3>Данные и задачи</h3><p>PostgreSQL 16, SQLAlchemy, APScheduler (сроки раз в 30 с), журнал событий по каждому наряду.</p></div>
+    <div class="c"><h3>ИИ-шлюз</h3><p>Gemini / Claude через один шлюз: обезличивание, строгий JSON, журнал вызовов. Без ключа — работает на правилах.</p></div>
+  </div>
+  <div class="c" style="margin-top:34px;display:flex;gap:40px;align-items:center">
+    <span class="num" style="font-size:56px">1</span><p>команда запуска: <b>docker compose up</b> (db, backend, scheduler, bot, frontend + Caddy HTTPS). CI GitHub Actions: линтеры, 211+ тестов, ai-eval, сборка.</p>
+  </div>
+  <div class="foot"><span>ZHETEL · НарядAI</span><img src="../../frontend/public/brand/km-logo.png"></div>
+</section>
+
+<!-- 6 -->
+<section class="s"><div class="bar"></div>
+  <div class="k">ИИ-модули</div>
+  <h2>Правила находят факты — модель объясняет смысл</h2>
+  <div class="g" style="grid-template-columns:repeat(3,1fr)">
+    <div class="c"><h3>Контроль сроков</h3><p>Напоминание за 30 мин, просрочка, эскалация непринятого (10 мин, аварийный — 3) с кандидатом на замену, руководителю после 2 ч.</p></div>
+    <div class="c"><h3>Проверка закрытия</h3><p>Полнота, время против норматива, материалы против нормы по шифру, соответствие работ проблеме, EXIF и дубликаты фото, сравнение «до/после».</p></div>
+    <div class="c"><h3>Аналитика</h3><p>7 детекторов аномалий на истории за 3 месяца с проверкой значимости; выводы простым языком и рекомендации.</p></div>
+    <div class="c"><h3>Рейтинг</h3><p>35% качество · 25% в срок · 20% без возвратов и повторов ≤7 дн · 15% объём×сложность · 5% без отказов.</p></div>
+    <div class="c"><h3>Подбор исполнителя</h3><p>Свободен → специальность → лучший рейтинг на этом оборудовании → меньше очередь. С пояснением «почему».</p></div>
+    <div class="c"><h3>Ассистент мастера</h3><p>Живой диалог: «Кто свободен из электриков?», «Что просрочено?» — ИИ сам смотрит данные смены через инструменты.</p></div>
+  </div>
+  <div class="foot"><span>ZHETEL · НарядAI</span><img src="../../frontend/public/brand/km-logo.png"></div>
+</section>
+
+<!-- 7 -->
+<section class="s"><div class="bar"></div>
+  <div class="k">Качество в цифрах</div>
+  <h2>Измеряем, а не обещаем</h2>
+  <div class="g" style="grid-template-columns:repeat(3,1fr)">
+    <div class="c"><div class="num">93%</div><p style="margin-top:14px">точность вердиктов ИИ-проверки: 28 из 30 размеченных случаев (make ai-eval)</p></div>
+    <div class="c"><div class="num">0,47 с</div><p style="margin-top:14px">доставка смены статуса всем участникам (ТЗ ≤ 5 с)</p></div>
+    <div class="c"><div class="num">2,4 с</div><p style="margin-top:14px">загрузка фото на Fast 3G (ТЗ ≤ 10 с)</p></div>
+    <div class="c"><div class="num">5</div><p style="margin-top:14px">нажатий на выдачу наряда (6 с фото), ТЗ ≤ 6</p></div>
+    <div class="c"><div class="num">4,4 с</div><p style="margin-top:14px">проверка работ моделью Gemini вживую; ассистент с инструментами 7–12 с</p></div>
+    <div class="c"><div class="num">211+</div><p style="margin-top:14px">тестов бэкенда, e2e-сценарий защиты из 9 шагов, 30 скриншот-тестов</p></div>
+  </div>
+  <div class="foot"><span>ZHETEL · НарядAI</span><img src="../../frontend/public/brand/km-logo.png"></div>
+</section>
+
+<!-- 8 -->
+<section class="s"><div class="bar"></div>
+  <div class="k">Аналитика · 553 наряда за 3 месяца</div>
+  <h2>ИИ находит все 5 заложенных закономерностей</h2>
+  <div style="display:grid;grid-template-columns:1.25fr 1fr;gap:50px;align-items:start">
+  <table>
+    <tr><th>Находка</th><th>Цифры</th></tr>
+    <tr><td>Конвейер К-3 — проблемное оборудование</td><td><b>47</b> внеплановых vs среднее 14,8 (×3,2); за 30 дней 25, из них М-02 — 21</td></tr>
+    <tr><td>Исполнитель Мельников И.</td><td><b>33%</b> возвратов vs 5%</td></tr>
+    <tr><td>КМД-1750 после ППР бригады №2</td><td><b>3 из 3</b> поломки; бригада №1 — 0 из 3</td></tr>
+    <tr><td>Обогащение, электрика Э-*</td><td>ночью <b>30</b>, днём 12 (×2,5)</td></tr>
+    <tr><td>Сейтказиев М. — смазочные</td><td><b>2,2</b> нормы vs 1,05</td></tr>
+  </table>
+  <img class="shot" src="../screenshots/analytics.png" style="width:100%;height:700px;object-fit:cover;object-position:top">
+  </div>
+  <div class="foot"><span>ZHETEL · НарядAI</span><img src="../../frontend/public/brand/km-logo.png"></div>
+</section>
+
+<!-- 9 -->
+<section class="s"><div class="bar"></div>
+  <div class="k">Эффект для предприятия</div>
+  <h2>Меньше простоя, честная оценка, безопасные данные</h2>
+  <div class="g" style="grid-template-columns:1fr 1fr">
+    <div class="c"><h3>Простой и сроки</h3><p>Непринятый и просроченный наряд эскалируется автоматически, аварийный «звонит» каждую минуту, пока не принят.</p></div>
+    <div class="c"><h3>Качество ремонта</h3><p>Каждое закрытие проверено: конкретные замечания вида «списано 6 л масла при норме 1,5 л для шифра Г-02».</p></div>
+    <div class="c"><h3>Профилактика</h3><p>Повторные поломки, слабые ППР и перерасход материалов видны до того, как станут аварией.</p></div>
+    <div class="c"><h3>Безопасность и интеграция</h3><p>ФИО обезличиваются до отправки в ИИ, вход по ПИН + JWT, роли. external_id и OpenAPI — задел под 1С / ТОиР.</p></div>
+  </div>
+  <div class="foot"><span>ZHETEL · НарядAI</span><img src="../../frontend/public/brand/km-logo.png"></div>
+</section>
+
+<!-- 10 -->
+<section class="s grad" style="padding:90px 110px">
+  <div style="font-size:24px;font-weight:600;color:#BFE9EE;margin-bottom:14px">План внедрения</div>
+  <h2 style="color:#fff">От пилота до всего комбината</h2>
+  <div class="g" style="grid-template-columns:repeat(4,1fr)">
+    <div class="c" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:#fff"><div class="num" style="color:#fff;font-size:60px">1</div><h3 style="margin-top:10px">Пилот</h3><p style="color:#E3F1FA">1 участок, 2 недели</p></div>
+    <div class="c" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:#fff"><div class="num" style="color:#fff;font-size:60px">2</div><h3 style="margin-top:10px">Калибровка ИИ</h3><p style="color:#E3F1FA">по правкам оценок мастерами</p></div>
+    <div class="c" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:#fff"><div class="num" style="color:#fff;font-size:60px">3</div><h3 style="margin-top:10px">Все участки</h3><p style="color:#E3F1FA">1–2 мес.: табель/СКУД, обмен с ТОиР, склад</p></div>
+    <div class="c" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.3);color:#fff"><div class="num" style="color:#fff;font-size:60px">4</div><h3 style="margin-top:10px">Аналитика</h3><p style="color:#E3F1FA">на реальной истории через 3 мес.</p></div>
+  </div>
+  <div style="margin-top:60px;font-size:27px;line-height:1.7">
+    <div><b>Репозиторий:</b> github.com/zhenisoffical1/NARYAD_AI</div>
+    <div><b>Живая система:</b> dame-beatles-intense-earn.trycloudflare.com · Telegram: @naryadai_km_bot</div>
+    <div><b>Учётки:</b> master1 / 2222 · akhmetov / 1234 · boss / 1111 · admin / 0000</div>
+  </div>
+  <div style="position:absolute;right:110px;bottom:70px;font-size:34px;font-weight:700">Команда ZHETEL</div>
+  <img src="../../frontend/public/brand/km-logo-white.png" style="position:absolute;left:110px;bottom:60px;height:56px">
+</section>
+</body></html>
