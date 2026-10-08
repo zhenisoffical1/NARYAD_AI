@@ -12,3 +12,21 @@ export interface AssistantReply {
 
 export const askAssistant = (question: string) =>
   api<AssistantReply>('/assistant/ask', { method: 'POST', json: { question } })
+
+export interface ChatTurn {
+  role: 'user' | 'assistant'
+  text: string
+}
+
+export interface ChatReply {
+  text: string
+  /** llm — ответила модель; rules — ассистент на правилах (модель недоступна) */
+  source: 'llm' | 'rules'
+  model: string | null
+  tools: string[]
+  items: AssistantReply['items']
+  report: AssistantReply['report']
+}
+
+export const chatAssistant = (messages: ChatTurn[]) =>
+  api<ChatReply>('/assistant/chat', { method: 'POST', json: { messages } })

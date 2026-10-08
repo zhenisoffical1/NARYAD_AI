@@ -1,9 +1,9 @@
 import { useMutation } from '@tanstack/react-query'
-import { useEffect, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
 
-import { askAssistant, type AssistantReply } from '@/shared/api/assistant'
+import { chatAssistant, type ChatReply, type ChatTurn } from '@/shared/api/assistant'
 import { cn } from '@/shared/lib/format'
 import { useSpeech } from '@/shared/lib/useSpeech'
 import { Button, Drawer, Icon } from '@/shared/ui'
@@ -16,12 +16,13 @@ const TONE = {
   info: 'bg-accent',
 } as const
 
-type Message = { id: number; question: string; reply?: AssistantReply; error?: string }
+type Message = { id: number; question: string; reply?: ChatReply; error?: string }
 
-/** Кнопка в шапке: открывает ассистента мастера. */
+/** Кнопка в шапке: открывает ассистента мастера. Разговор сохраняется, пока открыта страница. */
 export function AssistantButton({ variant = 'desk' }: { variant?: 'desk' | 'phone' }) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
+  const [messages, setMessages] = useState<Message[]>([])
   return (
     <>
       <button
@@ -36,36 +37,55 @@ export function AssistantButton({ variant = 'desk' }: { variant?: 'desk' | 'phon
         <Icon name="spark" size={variant === 'desk' ? 20 : 24} />
         {variant === 'desk' && t('assistant.title')}
       </button>
-      {open && <AssistantDrawer onClose={() => setOpen(false)} />}
+      {open && (
+        <AssistantDrawer messages={messages} setMessages={setMessages} onClose={() => setOpen(false)} />
+      )}
     </>
   )
 }
 
-/** Ассистент мастера (ТЗ 6.7): вопросы о смене текстом или голосом, ответы — из базы. */
-function AssistantDrawer({ onClose }: { onClose: () => void }) {
+/** Разговор для модели: вопросы и ответы по порядку (без ошибок и ещё не пришедших ответов). */
+function history(messages: Message[]): ChatTurn[] {
+  return messages.flatMap((m) =>
+    m.reply
+      ? [
+          { role: 'user' as const, text: m.question },
+          { role: 'assistant' as const, text: m.reply.text },
+        ]
+      : [],
+  )
+}
+
+/** Ассистент мастера (ТЗ 6.7): живой диалог с ИИ, данные — из системы, голосом или текстом. */
+function AssistantDrawer({
+  messages,
+  setMessages,
+  onClose,
+}: {
+  messages: Message[]
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>
+  onClose: () => void
+}) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
-  const [messages, setMessages] = useState<Message[]>([])
   const [question, setQuestion] = useState('')
   const endRef = useRef<HTMLDivElement>(null)
 
   const ask = useMutation({
-    mutationFn: (q: string) => askAssistant(q),
-    onMutate: (q) => {
-      const id = Date.now()
-      setMessages((m) => [...m, { id, question: q }])
-      return { id }
-    },
-    onSuccess: (reply, _q, ctx) =>
-      setMessages((m) => m.map((msg) => (msg.id === ctx.id ? { ...msg, reply } : msg))),
-    onError: (error: Error, _q, ctx) =>
-      setMessages((m) => m.map((msg) => (msg.id === ctx?.id ? { ...msg, error: error.message } : msg))),
+    mutationFn: ({ turns }: { id: number; turns: ChatTurn[] }) => chatAssistant(turns),
+    onSuccess: (reply, { id }) =>
+      setMessages((m) => m.map((msg) => (msg.id === id ? { ...msg, reply } : msg))),
+    onError: (error: Error, { id }) =>
+      setMessages((m) => m.map((msg) => (msg.id === id ? { ...msg, error: error.message } : msg))),
   })
   const send = (q: string) => {
     const text = q.trim()
     if (!text || ask.isPending) return
+    const id = Date.now()
+    const turns = [...history(messages), { role: 'user' as const, text }]
     setQuestion('')
-    ask.mutate(text)
+    setMessages((m) => [...m, { id, question: text }])
+    ask.mutate({ id, turns })
   }
   const speech = useSpeech(i18n.language, (text) => send(text))
 
@@ -136,7 +156,7 @@ function AssistantDrawer({ onClose }: { onClose: () => void }) {
         )}
         {messages.map((m) => (
           <div key={m.id} className="flex flex-col gap-2">
-            <p className="ml-auto max-w-[85%] rounded-[14px] rounded-br-[4px] bg-accent bg-grad-primary px-3.5 py-2 text-on-accent">
+            <p className="ml-auto max-w-[85%] rounded-[14px] rounded-br-[4px] bg-accent bg-grad-primary px-3.5 py-2 whitespace-pre-line text-on-accent">
               {m.question}
             </p>
             {m.error ? (
@@ -152,21 +172,76 @@ function AssistantDrawer({ onClose }: { onClose: () => void }) {
                 }}
               />
             ) : (
-              <p className="text-small text-ink-3">{t('assistant.thinking')}</p>
+              <p className="flex items-center gap-2 text-small text-ink-3">
+                <span aria-hidden className="size-2 animate-pulse rounded-full bg-accent" />
+                {t('assistant.thinking')}
+              </p>
             )}
           </div>
         ))}
+        {messages.length > 0 && !ask.isPending && (
+          <button
+            type="button"
+            onClick={() => setMessages([])}
+            className="self-center text-small text-ink-3 hover:text-ink"
+          >
+            {t('assistant.clear')}
+          </button>
+        )}
         <div ref={endRef} />
       </div>
     </Drawer>
   )
 }
 
-function Answer({ reply, onOpenReport }: { reply: AssistantReply; onOpenReport: (r: Record<string, string>) => void }) {
+/** Текст модели: абзацы, списки «- …» / «1. …» и **жирное** — без HTML из ответа. */
+function RichText({ text }: { text: string }) {
+  const blocks: ReactNode[] = []
+  let list: string[] = []
+  const flush = () => {
+    if (list.length) {
+      blocks.push(
+        <ul key={`l${blocks.length}`} className="ml-1 flex flex-col gap-1">
+          {list.map((item, i) => (
+            <li key={i} className="flex gap-2">
+              <span aria-hidden className="mt-2.5 size-1.5 shrink-0 rounded-full bg-accent" />
+              <span>{bold(item)}</span>
+            </li>
+          ))}
+        </ul>,
+      )
+      list = []
+    }
+  }
+  for (const raw of text.split('\n')) {
+    const line = raw.trim()
+    const item = /^(?:[-*•]|\d+[.)])\s+(.*)$/.exec(line)
+    if (item) {
+      list.push(item[1] ?? '')
+      continue
+    }
+    flush()
+    if (line) blocks.push(<p key={`p${blocks.length}`}>{bold(line)}</p>)
+  }
+  flush()
+  return <div className="flex flex-col gap-2">{blocks}</div>
+}
+
+function bold(text: string): ReactNode[] {
+  return text.split(/\*\*(.+?)\*\*/g).map((part, i) => (i % 2 ? <strong key={i}>{part}</strong> : part))
+}
+
+function Answer({
+  reply,
+  onOpenReport,
+}: {
+  reply: ChatReply
+  onOpenReport: (r: Record<string, string>) => void
+}) {
   const { t } = useTranslation()
   return (
     <div className="max-w-[92%] rounded-[14px] rounded-bl-[4px] border border-line bg-surface px-3.5 py-3 shadow-card">
-      <p className="whitespace-pre-line">{reply.text}</p>
+      <RichText text={reply.text} />
       {reply.items.length > 0 && (
         <ul className="mt-2 flex flex-col divide-y divide-line/70">
           {reply.items.map((item) => (
@@ -181,8 +256,11 @@ function Answer({ reply, onOpenReport }: { reply: AssistantReply; onOpenReport: 
         </ul>
       )}
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-        <span className="text-stamp font-normal text-ink-3">
-          {reply.source === 'llm' ? t('assistant.sourceLlm') : t('assistant.sourceRules')}
+        <span className="inline-flex items-center gap-1 text-stamp font-normal text-ink-3">
+          {reply.source === 'llm' && <Icon name="spark" size={13} className="text-accent" />}
+          {reply.source === 'llm'
+            ? t('assistant.sourceLlm', { model: reply.model ?? 'ИИ' })
+            : t('assistant.sourceRules')}
         </span>
         {reply.report && (
           <Button

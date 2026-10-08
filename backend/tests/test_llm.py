@@ -232,7 +232,9 @@ class FakeGemini:
         self.bodies: list[dict[str, Any]] = []
         self.models: list[str] = []
 
-    async def __call__(self, model: str, body: dict[str, Any]) -> tuple[int, dict[str, Any]]:
+    async def __call__(
+        self, model: str, body: dict[str, Any], wait_seconds: float | None = None
+    ) -> tuple[int, dict[str, Any]]:
         self.models.append(model)
         self.bodies.append(body)
         return self.replies.pop(0)

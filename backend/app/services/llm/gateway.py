@@ -221,9 +221,11 @@ def _gemini_body(system: str, content: list[dict[str, Any]], schema: dict[str, A
     }
 
 
-async def _gemini_post(model: str, body: dict[str, Any]) -> tuple[int, dict[str, Any]]:
+async def _gemini_post(
+    model: str, body: dict[str, Any], wait_seconds: float | None = None
+) -> tuple[int, dict[str, Any]]:
     """Один HTTP-запрос к Gemini API: (код ответа, JSON). Отдельной функцией — для тестов."""
-    async with httpx.AsyncClient(timeout=settings.llm_timeout_seconds) as http:
+    async with httpx.AsyncClient(timeout=wait_seconds or settings.llm_timeout_seconds) as http:
         response = await http.post(
             GEMINI_URL.format(model=model),
             headers={"x-goog-api-key": settings.gemini_api_key or ""},
@@ -312,6 +314,44 @@ async def _ask_gemini[T: BaseModel](
             continue
         await _log_call(purpose, model, started, p_hash, ok=True, usage=tokens)
         return result
+    return None
+
+
+async def gemini_generate(
+    purpose: str, body: dict[str, Any], *, fast: bool = False
+) -> dict[str, Any] | None:
+    """Сырой вызов Gemini для диалога с инструментами (ассистент): ответ API или None.
+
+    Тело запроса собирает вызывающий код — он уже обезличил данные. Здесь — журнал,
+    одна пауза при лимите бесплатного тарифа и None при любом сбое (вызывающий код
+    переходит на правила).
+    """
+    if settings.llm_backend != "gemini":
+        return None
+    model = settings.active_model(fast)
+    p_hash = hashlib.sha256(json.dumps(body, ensure_ascii=False)[:20000].encode()).hexdigest()
+    for attempt in (1, 2):
+        started = time.monotonic()
+        try:
+            status, data = await _gemini_post(model, body, settings.assistant_timeout_seconds)
+        except httpx.HTTPError as exc:
+            await _log_call(purpose, model, started, p_hash, ok=False, error=repr(exc))
+            return None
+        usage = data.get("usageMetadata") or {}
+        tokens = SimpleNamespace(
+            input_tokens=usage.get("promptTokenCount"),
+            output_tokens=usage.get("candidatesTokenCount"),
+        )
+        if status == 200:
+            await _log_call(purpose, model, started, p_hash, ok=True, usage=tokens)
+            return data
+        message = str((data.get("error") or {}).get("message", ""))[:300]
+        await _log_call(purpose, model, started, p_hash, ok=False, error=f"{status}: {message}")
+        if status == 429 and attempt == 1:
+            await asyncio.sleep(5)
+            continue
+        log.warning("Gemini %s: ошибка API %s", purpose, status)
+        return None
     return None
 
 

@@ -67,6 +67,8 @@ class Settings(BaseSettings):
     gemini_fast_model: str = "gemini-3.5-flash"
     # Проверка наряда должна уложиться в 15 с: на один вызов — не больше 12 с, при сбое — правила
     llm_timeout_seconds: float = 12
+    # Ассистент — живой диалог, ему можно думать дольше, чем проверке наряда
+    assistant_timeout_seconds: float = 30
     llm_effort: str = "low"  # классификация по готовым фактам — глубокое рассуждение не нужно
     # Server-side fallback (Claude API): при отказе модели запрос повторяется на запасной
     llm_server_fallback: bool = True
